@@ -37,6 +37,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cross-env": "^7.0.3",
+    "dompurify": "^3.2.4",
     "get-port-please": "^3.1.2",
     "lucide-react": "^0.477.0",
     "next": "14.2.5",

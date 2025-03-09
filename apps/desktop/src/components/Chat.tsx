@@ -5,6 +5,7 @@ import { Cog, Send, SendIcon, Sparkles, User } from "lucide-react"
 import Link from "next/link"
 import { useState, useRef, useEffect } from "react"
 import { ConversationSelect } from "./Conversations"
+import DOMPurify from "dompurify";
 
 // Message type definition
 type Message = {
@@ -236,7 +237,7 @@ function GeminiChat() {
   return (
     <div className="w-full to-transparent mx-auto">
       <div className="relative">
-        <div className="fixed border-b dark:border-neutral-600 border-neutral-400 p-1 top-0 w-full">
+        <div className={`fixed border-b p-1 top-0 w-full ${theme.borderColor}`}>
           <form autoFocus onSubmit={handleSubmit} className="flex w-full gap-2">
             <input
               autoFocus
@@ -248,14 +249,14 @@ function GeminiChat() {
             />
             <button
               disabled={isLoading}
-              className="dark:hover:bg-neutral-900/70 hover:bg-neutral-100/70 p-3 rounded-md dark:bg-neutral-900/40 bg-neutral-100/40 dark:text-white/40 text-black/40"
+              className="dark:hover:bg-neutral-900/70 hover:bg-neutral-100/70 p-3 rounded-md  dark:text-white/40 text-black/40"
               type="submit"
             >
               <SendIcon size={14} />
             </button>
           </form>
         </div>
-        <div className="space-y-4 mt-12 w-full h-[368px] overflow-x-scroll p-2 pt-2">
+        <div className="space-y-4 mt-12 w-full h-[370px] overflow-x-scroll p-2 pt-2">
           {messages.length === 0 ? (
             <div className="flex justify-center">
               <div className="flex mt-20 justify-center w-full max-w-sm flex-col gap-2">
@@ -298,19 +299,27 @@ function GeminiChat() {
                       <User className="text-blue-500 size-5 bg-blue-500/30 p-1 rounded-full" /> 
                     )}
                    
-                <div
-                  className={`max-w-[650px]   p-3 rounded-lg ${
-                   message.role === "user"
-                      ? "dark:bg-[#42424218] bg-gray-100/50 dark:text-white/80"
-                      : "bg-gray-100/30 dark:bg-[#ffffff11] text-black/80 dark:text-neutral-100"
-                  }`}
-                >
-                  <div dangerouslySetInnerHTML={{ __html: message.content }} />
-            {/*      {message.content ||
-                    (message.role === "assistant" &&
-                      isLoading &&
-                      "Thinking...")}   */}
-                </div>
+                   <div
+        className={`max-w-[650px] p-3 rounded-lg ${
+          message.role === "user"
+            ? `dark:bg-[#42424218] bg-gray-100/50 ${theme.textColor}`
+            : `bg-neutral-100/30 dark:bg-[#ffffff11]  ${theme.textColor}`
+        }`}
+      >
+        {/* 🟢 Show message content OR loading state */}
+        {message.content ? (
+          <div
+            dangerouslySetInnerHTML={{
+              __html: DOMPurify.sanitize(message.content.replace(/^html\s*/, ''))
+            }}
+          />
+        ) : (
+          message.role === "assistant" &&
+          isLoading && (
+            <div className="text-gray-500 italic animate-pulse">Thinking...</div>
+          )
+        )}
+         </div>
                 </div>
               </div>
             ))

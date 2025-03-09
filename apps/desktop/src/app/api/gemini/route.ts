@@ -143,11 +143,9 @@ export async function POST(req: NextRequest) {
             text = text.replace(/^```html\s*/, "").replace(/```$/, "");
             console.log("Chunk received:", text.substring(0, 20) + "...");
           // Convert lines starting with "- " or "• " into <ul><li> format
-          if (/^(-|\•) /.test(text)) {
-            text = "<ul>" + text.replace(/^(-|\•) (.*)$/gm, "<li>$2</li>") + "</ul>";
-          }
-
           controller.enqueue(new TextEncoder().encode(text));
+
+
 
           }
           console.log("Stream complete, closing controller");
@@ -162,7 +160,7 @@ export async function POST(req: NextRequest) {
     console.log("Returning stream response");
     return new Response(stream, {
       headers: {
-        'Content-Type': 'text/plain; charset=utf-8',
+        'Content-Type': 'application/json',
         'Cache-Control': 'no-cache, no-transform',
         'X-Content-Type-Options': 'nosniff',
       },
