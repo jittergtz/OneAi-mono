@@ -1,7 +1,7 @@
 "use client"
 
 import { useTheme } from "@/app/ThemeProvider"
-import { Cog, Send, SendIcon } from "lucide-react"
+import { Cog, Send, SendIcon, Sparkles, User } from "lucide-react"
 import Link from "next/link"
 import { useState, useRef, useEffect } from "react"
 import { ConversationSelect } from "./Conversations"
@@ -34,69 +34,56 @@ function GeminiChat() {
   const [isLoading, setIsLoading] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const { theme } = useTheme()
-  const [currentConversationId, setCurrentConversationId] = useState<
-    number | null
-  >(null)
+  const [currentConversationId, setCurrentConversationId] = useState<number | null>(null)
+  const [conversations, setConversations] = useState<Conversation[]>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("conversationHistory")
+      return saved ? JSON.parse(saved) : []
+    }
+    return []
+  })
 
   // Save changes to localStorage
   useEffect(() => {
     if (messages.length > 0) {
       localStorage.setItem("chatMessages", JSON.stringify(messages))
-
-      // If this is an existing conversation, update it in history
       if (currentConversationId !== null) {
         const conversationHistory = JSON.parse(
           localStorage.getItem("conversationHistory") || "[]"
         )
-
         const updatedHistory = conversationHistory.map((conv: Conversation) => {
           if (conv.id === currentConversationId) {
-            return {
-              ...conv,
-              messages: messages,
-            }
+            return { ...conv, messages }
           }
           return conv
         })
-
-        localStorage.setItem(
-          "conversationHistory",
-          JSON.stringify(updatedHistory)
-        )
+        localStorage.setItem("conversationHistory", JSON.stringify(updatedHistory))
       }
     }
   }, [messages, currentConversationId])
 
   // Handle new conversation
   const handleNewConversation = () => {
-    // Save current conversation in history if it has messages
     if (messages.length > 0) {
       const conversationHistory = JSON.parse(
         localStorage.getItem("conversationHistory") || "[]"
       )
-
-      // Only save if not already saved or if it's been modified
       if (currentConversationId === null) {
         const newConversation = {
           id: Date.now(),
           timestamp: new Date().toISOString(),
-          messages: messages,
-          name: "New conversation", // Default name until first message sent
+          messages,
+          name: "New conversation",
         }
-
         localStorage.setItem(
           "conversationHistory",
           JSON.stringify([...conversationHistory, newConversation])
         )
       }
     }
-
-    // Reset conversation state
     setMessages([])
     setCurrentConversationId(null)
     localStorage.removeItem("chatMessages")
-
-    // Update conversation list
     const updatedHistory = JSON.parse(
       localStorage.getItem("conversationHistory") || "[]"
     )
@@ -111,7 +98,6 @@ function GeminiChat() {
       localStorage.removeItem("chatMessages")
       return
     }
-
     const history = JSON.parse(
       localStorage.getItem("conversationHistory") || "[]"
     )
@@ -119,10 +105,7 @@ function GeminiChat() {
     if (conversation) {
       setMessages(conversation.messages)
       setCurrentConversationId(id)
-      localStorage.setItem(
-        "chatMessages",
-        JSON.stringify(conversation.messages)
-      )
+      localStorage.setItem("chatMessages", JSON.stringify(conversation.messages))
     }
   }
 
@@ -147,59 +130,49 @@ function GeminiChat() {
       { id: userMessageId, role: "user", content: input },
     ])
 
-    // If this is the first message and we don't have a conversation ID yet, create one
+    // Create a new conversation if needed
     if (isFirstMessage && currentConversationId === null) {
       const newConversationId = Date.now()
       setCurrentConversationId(newConversationId)
-
-      // Save a new conversation with this first message
       const conversationHistory = JSON.parse(
         localStorage.getItem("conversationHistory") || "[]"
       )
-
       const newConversation = {
         id: newConversationId,
         timestamp: new Date().toISOString(),
         messages: [{ id: userMessageId, role: "user", content: input }],
-        name: input.slice(0, 30) + (input.length > 30 ? "..." : ""), // Use first message as name
+        name: input.slice(0, 30) + (input.length > 30 ? "..." : ""),
       }
-
       localStorage.setItem(
         "conversationHistory",
         JSON.stringify([...conversationHistory, newConversation])
       )
     }
 
-    // Clear input and set loading state
     setInput("")
     setIsLoading(true)
 
     try {
       console.log("Sending request to API...")
 
-      // Add initial assistant message
+      // Add a placeholder assistant message
       setMessages((prev) => [
         ...prev,
         { id: assistantMessageId, role: "assistant", content: "" },
       ])
 
-      // Use old-school XHR for maximum compatibility with Electron
+      // Use XHR for streaming
       const xhr = new XMLHttpRequest()
       xhr.open("POST", "/api/gemini", true)
       xhr.setRequestHeader("Content-Type", "application/json")
 
-      // Track response building
       let fullResponse = ""
 
       xhr.onreadystatechange = function () {
-        // readyState 3 means "LOADING" - data is being received
         if (xhr.readyState === 3) {
-          // Get only the new part of the response
           const newContent = xhr.responseText.slice(fullResponse.length)
           if (newContent) {
             fullResponse = xhr.responseText
-
-            // Update message with new content
             setMessages((prev) =>
               prev.map((msg) =>
                 msg.id === assistantMessageId
@@ -209,12 +182,9 @@ function GeminiChat() {
             )
           }
         }
-
-        // readyState 4 means "DONE"
         if (xhr.readyState === 4) {
           if (xhr.status !== 200) {
             console.error("API error:", xhr.status, xhr.statusText)
-            // Update with error message
             setMessages((prev) =>
               prev.map((msg) =>
                 msg.id === assistantMessageId
@@ -231,7 +201,6 @@ function GeminiChat() {
         }
       }
 
-      // Handle network errors
       xhr.onerror = function () {
         console.error("Network error occurred")
         setMessages((prev) =>
@@ -247,9 +216,10 @@ function GeminiChat() {
         setIsLoading(false)
       }
 
-      // Send the request with proper JSON payload
-      const recentMessages = messages.slice(-10) // Send only the last 10 messages
-      xhr.send(JSON.stringify({ prompt: input, messages: recentMessages }))
+      // IMPORTANT: Send conversation context under the property "history"
+      const recentMessages = messages.slice(-10)
+      const payload = JSON.stringify({ prompt: input, history: recentMessages })
+      xhr.send(payload)
     } catch (error) {
       console.error("Error sending request:", error)
       setMessages((prev) => [
@@ -263,7 +233,6 @@ function GeminiChat() {
       setIsLoading(false)
     }
   }
-
   return (
     <div className="w-full to-transparent mx-auto">
       <div className="relative">
@@ -278,6 +247,7 @@ function GeminiChat() {
               className="flex-1 bg-transparent dark:text-[#ffffffe5] text-[#171717e5] placeholder:text-[#2c2c2d94] dark:placeholder:text-[#d9e1ea94] outline-none border-neutral-500 p-2"
             />
             <button
+              disabled={isLoading}
               className="dark:hover:bg-neutral-900/70 hover:bg-neutral-100/70 p-3 rounded-md dark:bg-neutral-900/40 bg-neutral-100/40 dark:text-white/40 text-black/40"
               type="submit"
             >
@@ -285,7 +255,7 @@ function GeminiChat() {
             </button>
           </form>
         </div>
-        <div className="space-y-4 mt-12 w-full h-80 overflow-x-scroll p-2 pt-2">
+        <div className="space-y-4 mt-12 w-full h-[368px] overflow-x-scroll p-2 pt-2">
           {messages.length === 0 ? (
             <div className="flex justify-center">
               <div className="flex mt-20 justify-center w-full max-w-sm flex-col gap-2">
@@ -316,20 +286,31 @@ function GeminiChat() {
               <div
                 key={message.id}
                 className={`flex ${
-                  message.role === "user" ? "justify-end" : "justify-start"
+                  message.role === "user" ? " justify-end" : "justify-start"
                 }`}
               >
+                <div className={`flex gap-2  ${
+                  message.role === "user" ? " items-center" : " items-start"
+                }`}>
+                  {message.role === "assistant" ? (
+                    <Sparkles className="text-orange-600 size-5 bg-red-500/20 p-1 rounded-md" />
+                    ): (
+                      <User className="text-blue-500 size-5 bg-blue-500/30 p-1 rounded-full" /> 
+                    )}
+                   
                 <div
-                  className={`max-w-xl p-3 rounded-lg ${
-                    message.role === "user"
-                      ? "dark:bg-[#2b2b2ba8] bg-gray-100/50 dark:text-white/80"
+                  className={`max-w-[650px]   p-3 rounded-lg ${
+                   message.role === "user"
+                      ? "dark:bg-[#42424218] bg-gray-100/50 dark:text-white/80"
                       : "bg-gray-100/30 dark:bg-[#ffffff11] text-black/80 dark:text-neutral-100"
                   }`}
                 >
-                  {message.content ||
+                  <div dangerouslySetInnerHTML={{ __html: message.content }} />
+            {/*      {message.content ||
                     (message.role === "assistant" &&
                       isLoading &&
-                      "Thinking...")}
+                      "Thinking...")}   */}
+                </div>
                 </div>
               </div>
             ))
@@ -340,7 +321,7 @@ function GeminiChat() {
       <div className="dark:bg-[#212121c1] h-8 overflow-hidden bg-[#adadadc1] border-[#ffffff1d] flex px-3 items-center justify-between gap-5">
         <div>
           <span className="dark:text-white/40 text-black/40 text-xs">
-            GPT-4.5
+          gemini-2.0-flash
           </span>
         </div>
         <div className="flex items-center gap-2">

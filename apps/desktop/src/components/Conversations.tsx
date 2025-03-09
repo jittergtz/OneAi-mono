@@ -127,7 +127,7 @@ export function ConversationSelect({
                 </SelectItem>
                 <button
                   onClick={(e) => handleDelete(e, conv.id)}
-                  className="absolute right-2 p-1 rounded-sm hover:bg-neutral-700 opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute right-2 p-1 rounded-sm bg-neutral-800 opacity-0 group-hover:opacity-100 transition-opacity"
                 >
                   <Trash2 className="h-4 w-4 text-red-500 hover:text-red-400" />
                 </button>

@@ -16,7 +16,7 @@ const getApiKeyFilePath = () => {
 const createWindow = async (): Promise<void> => {
   mainWindow = new BrowserWindow({
     width: 700,
-    height: 400,
+    height: 450,
     frame: false,
     vibrancy: "under-window",
     resizable: false,
