@@ -22,7 +22,7 @@ interface ThemeProviderProps {
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const themes: { [key: string]: Theme } = {
-    light: { bodyBackgroundColor: '#FAFAFA', textColor: 'text-neutral-900', borderColor: 'border-black/10'  },
+    light: { bodyBackgroundColor: 'linear-gradient(135deg, #ACACAC 50%, #F1F1F1 100%)', textColor: 'text-neutral-900', borderColor: 'border-black/10'  },
     dark: { bodyBackgroundColor: '#101010', textColor: 'text-white/80', borderColor: 'border-white/10' },
     system: { bodyBackgroundColor: '#00000000', textColor: 'text-white/80', borderColor: 'border-neutral-600' },
     ocean: { bodyBackgroundColor: 'linear-gradient(135deg, #8989F1 50%, #0F0F6F 100%)', textColor: 'text-white/80', borderColor: 'border-white/20'},

@@ -1,5 +1,5 @@
 // app/api/gemini/route.ts
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { DynamicRetrievalMode, GoogleGenerativeAI } from '@google/generative-ai';
 import { NextRequest, NextResponse } from 'next/server';
 import path from 'path';
 import * as fsPromises from 'fs/promises';
@@ -45,9 +45,14 @@ async function summarizeText(model: any, text: string): Promise<string> {
     response_mime_type: "text/plain",
   };
 
-  const summaryResult = await model.generateContentStream(summaryPrompt, summaryConfig);
-  const summary = await collectStreamText(summaryResult.stream);
-  return summary.trim();
+  try {
+    const summaryResult = await model.generateContentStream(summaryPrompt, summaryConfig);
+    const summary = await collectStreamText(summaryResult.stream);
+    return summary.trim();
+  } catch (error) {
+    console.warn("Error summarizing text:", error);
+    return "Previous conversation (summary unavailable due to API limitations)";
+  }
 }
 
 export async function POST(req: NextRequest) {
@@ -72,28 +77,38 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "API Key not configured. Please go to settings." }, { status: 400 });
     }
 
-    // Parse request body and destructure both prompt and history
+    // Parse request body and destructure prompt, history and useSearch flag
     const body = await req.json();
-    const { prompt, history } = body;
+    const { prompt, history, useSearch = false } = body;
     console.log("Prompt received:", prompt);
+    console.log("Search mode:", useSearch ? "enabled" : "disabled");
 
     if (!prompt) {
       console.log("No prompt provided");
       return NextResponse.json({ error: 'Prompt is required' }, { status: 400 });
     }
 
-    // Define system/role context
-    const roleContext = `
-    You are a helpful assistant answering questions. Format responses in valid, well-structured HTML. 
-
-    `;
+    // Define system/role context based on search mode
+    const roleContext = useSearch 
+      ? `You are a helpful assistant answering questions. Format responses in valid, well-structured HTML.
+         You have access to Google Search to provide up-to-date information on current events, facts, and data.
+         When search results are available, incorporate them into your response while citing sources.`
+      : `You are a helpful assistant answering questions. Format responses in valid, well-structured HTML.
+         Answer based on your knowledge and training data only.`;
     
-
-
     // Build conversation context from history (if provided)
     let contextText = "";
     const MAX_HISTORY_TOKENS = 500; // Threshold for token count
     const RECENT_COUNT = 3; // Number of most recent messages to keep in detail
+
+    // Initialize GoogleGenerativeAI with API Key
+    console.log("Initializing GoogleGenerativeAI with API Key from file");
+    const genAI = new GoogleGenerativeAI(apiKey);
+
+    // Create a model for summarization if needed
+    const modelForSummarization = genAI.getGenerativeModel({
+      model: "gemini-1.5-flash",
+    });
 
     if (history && Array.isArray(history) && history.length > 0) {
       const formattedHistory = formatHistory(history);
@@ -103,8 +118,6 @@ export async function POST(req: NextRequest) {
         const recentHistory = history.slice(history.length - RECENT_COUNT);
         const olderFormatted = formatHistory(olderHistory);
         console.log("History too long; summarizing older messages.");
-        const genAIForSummarization = new GoogleGenerativeAI(apiKey);
-        const modelForSummarization = genAIForSummarization.getGenerativeModel({ model: "gemini-2.0-flash" });
         const summary = await summarizeText(modelForSummarization, olderFormatted);
         const recentFormatted = formatHistory(recentHistory);
         contextText = summary + "\n" + recentFormatted;
@@ -126,12 +139,56 @@ export async function POST(req: NextRequest) {
       response_mime_type: "text/html",
     };
 
-    console.log("Initializing GoogleGenerativeAI with API Key from file");
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    let model;
+    let result;
 
-    console.log("Generating content stream");
-    const result = await model.generateContentStream(fullPrompt, generationConfig);
+    try {
+      if (useSearch) {
+        // Use model with Google Search Retrieval when search is enabled
+        console.log("Creating model with Google Search Retrieval enabled");
+        model = genAI.getGenerativeModel({
+          model: "gemini-1.5-pro",
+          tools: [
+            {
+              googleSearchRetrieval: {
+                dynamicRetrievalConfig: {
+                  mode: DynamicRetrievalMode.AUTO,
+                  dynamicThreshold: 0.7,
+                },
+              },
+            },
+          ],
+        }, { apiVersion: "v1beta" });
+        console.log("Generating content stream with search capability");
+      } else {
+        // Use normal model without search when search is disabled
+        console.log("Creating model without search capability");
+        model = genAI.getGenerativeModel({
+          model: "gemini-2.0-flash",
+        });
+        console.log("Generating content stream without search capability");
+      }
+      
+      // Generate content with the selected model
+      result = await model.generateContentStream(fullPrompt, generationConfig);
+      console.log(`Successfully using model ${useSearch ? 'with' : 'without'} search capability`);
+    } catch (error) {
+      console.warn(`Failed to use model ${useSearch ? 'with' : 'without'} search capability:`, error);
+      
+      // Always fallback to model without search
+      console.log("Falling back to model without search capability");
+      model = genAI.getGenerativeModel({
+        model: "gemini-2.0-flash", // Fallback to a model with potentially different quota
+      });
+      
+      // Modify the prompt to acknowledge search isn't available if search was requested
+      const fallbackPrompt = useSearch 
+        ? `${roleContext}\n\nNote: Search features are currently unavailable. Please answer based on your knowledge only.\n\nConversation History:\n${contextText}\n\nUser: ${prompt}\n\nAssistant:`
+        : fullPrompt;
+      
+      console.log("Generating content stream with fallback model");
+      result = await model.generateContentStream(fallbackPrompt, generationConfig);
+    }
 
     // Create a ReadableStream for the response
     const stream = new ReadableStream({
@@ -142,11 +199,7 @@ export async function POST(req: NextRequest) {
             let text = chunk.text();
             text = text.replace(/^```html\s*/, "").replace(/```$/, "");
             console.log("Chunk received:", text.substring(0, 20) + "...");
-          // Convert lines starting with "- " or "• " into <ul><li> format
-          controller.enqueue(new TextEncoder().encode(text));
-
-
-
+            controller.enqueue(new TextEncoder().encode(text));
           }
           console.log("Stream complete, closing controller");
           controller.close();
@@ -167,6 +220,19 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     console.error("API error:", error);
-    return NextResponse.json({ error: 'Failed to process streaming request' }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    
+    // Check for quota-related errors
+    if (errorMessage.includes("429") || errorMessage.includes("quota") || errorMessage.includes("exhausted")) {
+      return NextResponse.json({ 
+        error: 'API quota exceeded. Please try again later or upgrade your API plan.',
+        details: errorMessage
+      }, { status: 429 });
+    }
+    
+    return NextResponse.json({ 
+      error: 'Failed to process streaming request',
+      details: errorMessage
+     }, { status: 500 });
   }
 }
