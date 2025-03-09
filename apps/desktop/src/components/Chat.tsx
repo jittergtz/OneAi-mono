@@ -1,10 +1,10 @@
-
 "use client"
 
 import { useTheme } from "@/app/ThemeProvider"
 import { Cog, Send, SendIcon } from "lucide-react"
 import Link from "next/link"
 import { useState, useRef, useEffect } from "react"
+import { ConversationSelect } from "./Conversations"
 
 // Message type definition
 type Message = {
@@ -13,78 +13,118 @@ type Message = {
   content: string
 }
 
+// Conversation type definition
+type Conversation = {
+  id: number
+  timestamp: string
+  messages: Message[]
+  name?: string
+}
+
 function GeminiChat() {
   // State management
   const [messages, setMessages] = useState<Message[]>(() => {
     if (typeof window !== "undefined") {
-      const savedMessages = localStorage.getItem("chatMessages");
-      return savedMessages ? JSON.parse(savedMessages) : [];
+      const savedMessages = localStorage.getItem("chatMessages")
+      return savedMessages ? JSON.parse(savedMessages) : []
     }
-    return [];
-  });
+    return []
+  })
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const { theme } = useTheme();
+  const { theme } = useTheme()
+  const [currentConversationId, setCurrentConversationId] = useState<
+    number | null
+  >(null)
 
- // Fügen Sie einen useEffect hinzu, um Änderungen zu speichern
- useEffect(() => {
-  if (messages.length > 0) {
-    localStorage.setItem("chatMessages", JSON.stringify(messages));
-  }
-}, [messages]);
+  // Save changes to localStorage
+  useEffect(() => {
+    if (messages.length > 0) {
+      localStorage.setItem("chatMessages", JSON.stringify(messages))
 
-// Aktualisieren Sie die handleNewConversation Funktion
-const handleNewConversation = () => {
-  // Speichere aktuelle Konversation in der Historie
-  if (messages.length > 0) {
-    const conversationHistory = JSON.parse(
+      // If this is an existing conversation, update it in history
+      if (currentConversationId !== null) {
+        const conversationHistory = JSON.parse(
+          localStorage.getItem("conversationHistory") || "[]"
+        )
+
+        const updatedHistory = conversationHistory.map((conv: Conversation) => {
+          if (conv.id === currentConversationId) {
+            return {
+              ...conv,
+              messages: messages,
+            }
+          }
+          return conv
+        })
+
+        localStorage.setItem(
+          "conversationHistory",
+          JSON.stringify(updatedHistory)
+        )
+      }
+    }
+  }, [messages, currentConversationId])
+
+  // Handle new conversation
+  const handleNewConversation = () => {
+    // Save current conversation in history if it has messages
+    if (messages.length > 0) {
+      const conversationHistory = JSON.parse(
+        localStorage.getItem("conversationHistory") || "[]"
+      )
+
+      // Only save if not already saved or if it's been modified
+      if (currentConversationId === null) {
+        const newConversation = {
+          id: Date.now(),
+          timestamp: new Date().toISOString(),
+          messages: messages,
+          name: "New conversation", // Default name until first message sent
+        }
+
+        localStorage.setItem(
+          "conversationHistory",
+          JSON.stringify([...conversationHistory, newConversation])
+        )
+      }
+    }
+
+    // Reset conversation state
+    setMessages([])
+    setCurrentConversationId(null)
+    localStorage.removeItem("chatMessages")
+
+    // Update conversation list
+    const updatedHistory = JSON.parse(
       localStorage.getItem("conversationHistory") || "[]"
-    );
-    
-    const newConversation = {
-      id: Date.now(),
-      timestamp: new Date().toISOString(),
-      messages: messages,
-    };
-
-    localStorage.setItem(
-      "conversationHistory",
-      JSON.stringify([...conversationHistory, newConversation])
-    );
+    )
+    setConversations(updatedHistory)
   }
 
-  // Lösche aktuelle Konversation
-  setMessages([]);
-  localStorage.removeItem("chatMessages");
-};
+  // Load conversation from history
+  const loadConversationFromHistory = (id: number | null) => {
+    if (id === null) {
+      setMessages([])
+      setCurrentConversationId(null)
+      localStorage.removeItem("chatMessages")
+      return
+    }
 
-// Funktion zum Laden einer Konversation aus der Historie
-const loadConversationFromHistory = (id: number) => {
-  const history = JSON.parse(localStorage.getItem("conversationHistory") || "[]");
-  const conversation = history.find((conv: any) => conv.id === id);
-  if (conversation) {
-    setMessages(conversation.messages);
-    localStorage.setItem("chatMessages", JSON.stringify(conversation.messages));
+    const history = JSON.parse(
+      localStorage.getItem("conversationHistory") || "[]"
+    )
+    const conversation = history.find((conv: Conversation) => conv.id === id)
+    if (conversation) {
+      setMessages(conversation.messages)
+      setCurrentConversationId(id)
+      localStorage.setItem(
+        "chatMessages",
+        JSON.stringify(conversation.messages)
+      )
+    }
   }
-};
-
-// Fügen Sie diese Funktion hinzu, um die Historie anzuzeigen
-const renderConversationHistory = () => {
-  const history = JSON.parse(localStorage.getItem("conversationHistory") || "[]");
-  return history.map((conv: any) => {
-    const date = new Date(conv.timestamp).toLocaleDateString();
-    return (
-      <button
-        key={conv.id}
-        onClick={() => loadConversationFromHistory(conv.id)}
-        className="text-xs hover:bg-neutral-800 p-2 rounded-md"
-      >
-        {date} - {conv.messages[0]?.content.slice(0, 30)}...
-      </button>
-    );
-  });
-};
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -94,17 +134,41 @@ const renderConversationHistory = () => {
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("triggerd button")
+    console.log("triggered button")
     if (!input.trim()) return
 
     const userMessageId = `user-${Date.now()}`
     const assistantMessageId = `assistant-${Date.now()}`
+    const isFirstMessage = messages.length === 0
 
     // Add user message to chat
     setMessages((prev) => [
       ...prev,
       { id: userMessageId, role: "user", content: input },
     ])
+
+    // If this is the first message and we don't have a conversation ID yet, create one
+    if (isFirstMessage && currentConversationId === null) {
+      const newConversationId = Date.now()
+      setCurrentConversationId(newConversationId)
+
+      // Save a new conversation with this first message
+      const conversationHistory = JSON.parse(
+        localStorage.getItem("conversationHistory") || "[]"
+      )
+
+      const newConversation = {
+        id: newConversationId,
+        timestamp: new Date().toISOString(),
+        messages: [{ id: userMessageId, role: "user", content: input }],
+        name: input.slice(0, 30) + (input.length > 30 ? "..." : ""), // Use first message as name
+      }
+
+      localStorage.setItem(
+        "conversationHistory",
+        JSON.stringify([...conversationHistory, newConversation])
+      )
+    }
 
     // Clear input and set loading state
     setInput("")
@@ -184,7 +248,8 @@ const renderConversationHistory = () => {
       }
 
       // Send the request with proper JSON payload
-      xhr.send(JSON.stringify({ prompt: input }))
+      const recentMessages = messages.slice(-10) // Send only the last 10 messages
+      xhr.send(JSON.stringify({ prompt: input, messages: recentMessages }))
     } catch (error) {
       console.error("Error sending request:", error)
       setMessages((prev) => [
@@ -199,12 +264,10 @@ const renderConversationHistory = () => {
     }
   }
 
-
-
   return (
-    <div className="w-full to-transparent  mx-auto">
-      <div className=" relative">
-        <div className=" fixed   border-b border-neutral-600 p-1 top-0 w-full">
+    <div className="w-full to-transparent mx-auto">
+      <div className="relative">
+        <div className="fixed border-b dark:border-neutral-600 border-neutral-400 p-1 top-0 w-full">
           <form autoFocus onSubmit={handleSubmit} className="flex w-full gap-2">
             <input
               autoFocus
@@ -212,21 +275,21 @@ const renderConversationHistory = () => {
               onChange={(e) => setInput(e.target.value)}
               placeholder="Type your message..."
               disabled={isLoading}
-              className="flex-1 bg-transparent    placeholder:text-[#d9e1ea94] outline-none border-neutral-500 p-2 "
+              className="flex-1 bg-transparent dark:text-[#ffffffe5] text-[#171717e5] placeholder:text-[#2c2c2d94] dark:placeholder:text-[#d9e1ea94] outline-none border-neutral-500 p-2"
             />
             <button
-              className="hover:bg-neutral-900/70 p-3 rounded-md bg-neutral-900/40 text-white/40"
+              className="dark:hover:bg-neutral-900/70 hover:bg-neutral-100/70 p-3 rounded-md dark:bg-neutral-900/40 bg-neutral-100/40 dark:text-white/40 text-black/40"
               type="submit"
             >
               <SendIcon size={14} />
             </button>
           </form>
         </div>
-        <div className="space-y-4  mt-12  w-full h-80 overflow-x-scroll p-2 pt-2">
+        <div className="space-y-4 mt-12 w-full h-80 overflow-x-scroll p-2 pt-2">
           {messages.length === 0 ? (
             <div className="flex justify-center">
-              <div className="flex mt-20  justify-center w-full max-w-sm flex-col gap-2">
-                <h1 className="text-center   text-4xl text-[#ffffff5a] ">
+              <div className="flex mt-20 justify-center w-full max-w-sm flex-col gap-2">
+                <h1 className="text-center text-4xl dark:text-[#ffffff5a] text-[#5757575a]">
                   One
                 </h1>
                 <p className="text-center pb-2 text-transparent bg-clip-text bg-gradient-to-r from-[#050505] via-[#9b9b9bcb] to-[#000000]">
@@ -236,13 +299,13 @@ const renderConversationHistory = () => {
                   <button className="size-14 bg-black/20 duration-200 hover:bg-neutral-800 cursor-pointer flex items-center justify-center border border-[#6a6a6a2d] shadow-sm shadow-black text-white/30 text-sm rounded-xl">
                     whop
                   </button>
-                  <button className="size-16 bg-black/20 duration-200 hover:bg-neutral-800 cursor-pointer flex items-center justify-center border border-[#6a6a6a2d] shadow-sm shadow-black  text-white/30 text-sm rounded-xl">
+                  <button className="size-16 bg-black/20 duration-200 hover:bg-neutral-800 cursor-pointer flex items-center justify-center border border-[#6a6a6a2d] shadow-sm shadow-black text-white/30 text-sm rounded-xl">
                     AI
                   </button>
-                  <button className="size-16 bg-black/20 duration-200 hover:bg-neutral-800 cursor-pointer flex items-center justify-center border border-[#6a6a6a2d] shadow-sm shadow-black  text-white/30 text-sm rounded-xl">
+                  <button className="size-16 bg-black/20 duration-200 hover:bg-neutral-800 cursor-pointer flex items-center justify-center border border-[#6a6a6a2d] shadow-sm shadow-black text-white/30 text-sm rounded-xl">
                     Last
                   </button>
-                  <button className="size-14 bg-black/20 duration-200 hover:bg-neutral-800 cursor-pointer flex items-center justify-center border border-[#6a6a6a2d] shadow-sm shadow-black  text-white/30 text-sm rounded-xl">
+                  <button className="size-14 bg-black/20 duration-200 hover:bg-neutral-800 cursor-pointer flex items-center justify-center border border-[#6a6a6a2d] shadow-sm shadow-black text-white/30 text-sm rounded-xl">
                     New
                   </button>
                 </div>
@@ -259,8 +322,8 @@ const renderConversationHistory = () => {
                 <div
                   className={`max-w-xl p-3 rounded-lg ${
                     message.role === "user"
-                      ? "bg-[#242424] text-white/80"
-                      : "bg-gray-100  dark:bg-[#ffffff11] text-neutral-100"
+                      ? "dark:bg-[#2b2b2ba8] bg-gray-100/50 dark:text-white/80"
+                      : "bg-gray-100/30 dark:bg-[#ffffff11] text-black/80 dark:text-neutral-100"
                   }`}
                 >
                   {message.content ||
@@ -274,30 +337,31 @@ const renderConversationHistory = () => {
           <div ref={messagesEndRef} />
         </div>
       </div>
-      <div className=" dark:bg-[#212121c1] bg-[#adadadc1] border-[#ffffff1d] flex px-3 p-1 h-8 items-center justify-end gap-5">
-        <button
-          onClick={handleNewConversation}
-          className="flex gap-1 text-xs items-center text-white/40 hover:text-white/80"
-        >
-          new converstaion
-        </button>
-         {/* Fügen Sie ein Dropdown oder Modal für die Historie hinzu */}
-  <div className="relative">
-    <button
-      onClick={() => {
-        const history = JSON.parse(localStorage.getItem("conversationHistory") || "[]");
-        if (history.length > 0) {
-          loadConversationFromHistory(history[history.length - 1].id);
-        }
-      }}
-      className="px-3 bg-black/20 duration-200 hover:bg-neutral-800 cursor-pointer flex items-center justify-center border border-[#6a6a6a2d] shadow-sm shadow-black text-white/30 text-sm rounded-sm"
-    >
-      Last
-    </button>
-  </div>
-        <Link href={"/settings"} className="hover:text-white/80 text-white/40">
-          <Cog size={14} />
-        </Link>
+      <div className="dark:bg-[#212121c1] h-8 overflow-hidden bg-[#adadadc1] border-[#ffffff1d] flex px-3 items-center justify-between gap-5">
+        <div>
+          <span className="dark:text-white/40 text-black/40 text-xs">
+            GPT-4.5
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleNewConversation}
+            className="flex gap-1 text-xs items-center dark:text-white/40 text-black/40 hover:text-white/80"
+          >
+            New
+          </button>
+          <div className="relative">
+            <ConversationSelect
+              onSelectConversation={loadConversationFromHistory}
+            />
+          </div>
+          <Link
+            href={"/settings"}
+            className="hover:text-white/80 dark:text-white/40 text-black/40"
+          >
+            <Cog size={14} />
+          </Link>
+        </div>
       </div>
     </div>
   )

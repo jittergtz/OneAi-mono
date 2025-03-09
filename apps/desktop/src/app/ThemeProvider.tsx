@@ -26,7 +26,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     system: { bodyBackgroundColor: '#07070700', textColor: 'text-white/80' },
     ocean: { bodyBackgroundColor: '#1c2faa58', textColor: 'text-white/80'},
     glas: { bodyBackgroundColor: 'rgba(16, 16, 16, 0.8)', textColor: 'text-white/80' },
-    red: { bodyBackgroundColor: '#dcbdace3', textColor: 'text-white/80' },
+    red: { bodyBackgroundColor: '#50453F90', textColor: 'text-white/80' },
   };
 
   // Initialisiere das Theme aus dem localStorage oder verwende 'dark' als Fallback

@@ -63,11 +63,11 @@ export async function POST(req: NextRequest) {
     };
 
     // Combine the role/context with the user's prompt
-    const fullPrompt = `${roleContext}\n\nUser: ${prompt}\n\nAssistant:`;
+    const fullPrompt = ` ${prompt}\n\nAssistant:`;
 
     console.log("Initializing GoogleGenerativeAI with API Key from file");
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite-preview-02-05" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
     console.log("Generating content stream");
     const result = await model.generateContentStream(fullPrompt);

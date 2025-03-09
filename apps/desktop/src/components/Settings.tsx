@@ -54,7 +54,7 @@ function SettingsPage() {
   return (
    <main className='p-5 min-h-screen'>
     <Link className='absolute text-white/70 hover:text-white top-4 left-4' href="/"><ChevronLeftIcon size={17} /></Link>
-    <h1 className={`text-xl mt-6 ${theme.textColor} `}>Settings</h1>
+    <h1 className={`text-xl  mt-6 ${theme.textColor} `}>Settings</h1>
 
     <div className='p-1 mt-2 rounded-md bg-black/20'>
     <form className="mt-2" onSubmit={handleSubmit}>
