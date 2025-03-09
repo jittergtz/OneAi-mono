@@ -1,59 +1,58 @@
-// src/context/ThemeProvider.tsx
-'use client'; 
+'use client';
 
-import React, { createContext, useState, useContext, ReactNode } from 'react';
+import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 
-// 1. Define Theme Type
 interface Theme {
   bodyBackgroundColor: string;
-  // You can add more theme properties here like text color, accent color, etc.
+  textColor: string;
 }
 
-// 2. Define Theme Context Type
 interface ThemeContextType {
+  currentTheme: string;
+  setCurrentTheme: (themeName: string) => void;
   theme: Theme;
-  setTheme: (theme: Theme) => void;
 }
 
-// 3. Create Theme Context
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-// 4. Theme Provider Component
 interface ThemeProviderProps {
   children: ReactNode;
 }
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
-  // Initial Themes (for testing - you can expand these)
   const themes: { [key: string]: Theme } = {
-    light: { bodyBackgroundColor: '#f0f0f0' }, // Light gray
-    dark: { bodyBackgroundColor: '#333333' },   // Dark gray
-    blue: { bodyBackgroundColor: '#e0f7fa' },   // Light blue
-    green: { bodyBackgroundColor: '#e8f5e9' },  // Light green
+    light: { bodyBackgroundColor: '#e6e6e6', textColor: 'text-neutral-900'  },
+    dark: { bodyBackgroundColor: 'rgba(16, 16, 16, 0.8)', textColor: 'text-white/80' },
+    system: { bodyBackgroundColor: '#07070700', textColor: 'text-white/80' },
+    ocean: { bodyBackgroundColor: '#1c2faa58', textColor: 'text-white/80'},
+    glas: { bodyBackgroundColor: 'rgba(16, 16, 16, 0.8)', textColor: 'text-white/80' },
+    red: { bodyBackgroundColor: '#dcbdace3', textColor: 'text-white/80' },
   };
 
-  // State to hold the current theme (default to 'light' for now)
-  const [currentThemeName, setCurrentThemeName] = useState<string>('light'); // Start with 'light' theme
-  const currentTheme = themes[currentThemeName];
+  // Initialisiere das Theme aus dem localStorage oder verwende 'dark' als Fallback
+  const [currentTheme, setCurrentTheme] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      const savedTheme = localStorage.getItem('theme');
+      return savedTheme || 'dark';
+    }
+    return 'dark';
+  });
 
-  // Function to set the theme
-  const setThemeName = (themeName: string) => {
-    setCurrentThemeName(themeName);
-  };
+  // Aktualisiere localStorage wenn sich das Theme ändert
+  useEffect(() => {
+    localStorage.setItem('theme', currentTheme);
+    document.body.style.backgroundColor = themes[currentTheme].bodyBackgroundColor;
+    // Entferne alle möglichen Textfarben-Klassen
+    document.body.classList.remove('text-neutral-900', 'text-white');
+    // Füge die neue Textfarben-Klasse hinzu
+    document.body.classList.add(themes[currentTheme].textColor);
+  }, [currentTheme]);
 
   const contextValue: ThemeContextType = {
-    theme: currentTheme,
-    setTheme: (theme: Theme) => {
-      // Find the theme name corresponding to the provided theme object
-      const themeEntry = Object.entries(themes).find(([, themeObj]) => themeObj === theme);
-      if (themeEntry) {
-        setThemeName(themeEntry[0]); // Set theme name based on found entry
-      } else {
-        console.warn("Provided theme object not found in themes list.");
-      }
-    },
+    currentTheme,
+    setCurrentTheme,
+    theme: themes[currentTheme],
   };
-
 
   return (
     <ThemeContext.Provider value={contextValue}>
@@ -62,7 +61,6 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   );
 };
 
-// 5. Custom Hook to use the Theme Context
 export const useTheme = (): ThemeContextType => {
   const context = useContext(ThemeContext);
   if (!context) {

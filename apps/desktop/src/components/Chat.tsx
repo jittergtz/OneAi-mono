@@ -1,6 +1,7 @@
 
 "use client"
 
+import { useTheme } from "@/app/ThemeProvider"
 import { Cog, Send, SendIcon } from "lucide-react"
 import Link from "next/link"
 import { useState, useRef, useEffect } from "react"
@@ -14,20 +15,76 @@ type Message = {
 
 function GeminiChat() {
   // State management
-  const [messages, setMessages] = useState<Message[]>([])
+  const [messages, setMessages] = useState<Message[]>(() => {
+    if (typeof window !== "undefined") {
+      const savedMessages = localStorage.getItem("chatMessages");
+      return savedMessages ? JSON.parse(savedMessages) : [];
+    }
+    return [];
+  });
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const { theme } = useTheme();
 
-  // For debugging in Electron
-  useEffect(() => {
-    console.log("Component mounted, environment check:")
-    console.log(
-      "Is Electron:",
-      typeof window !== "undefined" &&
-        window.navigator.userAgent.toLowerCase().indexOf(" electron/") > -1
-    )
-  }, [])
+ // Fügen Sie einen useEffect hinzu, um Änderungen zu speichern
+ useEffect(() => {
+  if (messages.length > 0) {
+    localStorage.setItem("chatMessages", JSON.stringify(messages));
+  }
+}, [messages]);
+
+// Aktualisieren Sie die handleNewConversation Funktion
+const handleNewConversation = () => {
+  // Speichere aktuelle Konversation in der Historie
+  if (messages.length > 0) {
+    const conversationHistory = JSON.parse(
+      localStorage.getItem("conversationHistory") || "[]"
+    );
+    
+    const newConversation = {
+      id: Date.now(),
+      timestamp: new Date().toISOString(),
+      messages: messages,
+    };
+
+    localStorage.setItem(
+      "conversationHistory",
+      JSON.stringify([...conversationHistory, newConversation])
+    );
+  }
+
+  // Lösche aktuelle Konversation
+  setMessages([]);
+  localStorage.removeItem("chatMessages");
+};
+
+// Funktion zum Laden einer Konversation aus der Historie
+const loadConversationFromHistory = (id: number) => {
+  const history = JSON.parse(localStorage.getItem("conversationHistory") || "[]");
+  const conversation = history.find((conv: any) => conv.id === id);
+  if (conversation) {
+    setMessages(conversation.messages);
+    localStorage.setItem("chatMessages", JSON.stringify(conversation.messages));
+  }
+};
+
+// Fügen Sie diese Funktion hinzu, um die Historie anzuzeigen
+const renderConversationHistory = () => {
+  const history = JSON.parse(localStorage.getItem("conversationHistory") || "[]");
+  return history.map((conv: any) => {
+    const date = new Date(conv.timestamp).toLocaleDateString();
+    return (
+      <button
+        key={conv.id}
+        onClick={() => loadConversationFromHistory(conv.id)}
+        className="text-xs hover:bg-neutral-800 p-2 rounded-md"
+      >
+        {date} - {conv.messages[0]?.content.slice(0, 30)}...
+      </button>
+    );
+  });
+};
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -142,6 +199,8 @@ function GeminiChat() {
     }
   }
 
+
+
   return (
     <div className="w-full to-transparent  mx-auto">
       <div className=" relative">
@@ -153,10 +212,10 @@ function GeminiChat() {
               onChange={(e) => setInput(e.target.value)}
               placeholder="Type your message..."
               disabled={isLoading}
-              className="flex-1 bg-transparent  placeholder:text-[#d9e1ea94] outline-none border-neutral-500 p-2 "
+              className="flex-1 bg-transparent    placeholder:text-[#d9e1ea94] outline-none border-neutral-500 p-2 "
             />
             <button
-              className="hover:bg-neutral-900/70 p-3 rounded-md bg-neutral-900/40"
+              className="hover:bg-neutral-900/70 p-3 rounded-md bg-neutral-900/40 text-white/40"
               type="submit"
             >
               <SendIcon size={14} />
@@ -174,18 +233,18 @@ function GeminiChat() {
                   Ask Anything
                 </p>
                 <div className="flex justify-center items-center gap-2">
-                  <div className="size-14 bg-black/20 flex items-center justify-center border border-[#6a6a6a2d] shadow-sm shadow-black text-white/30 text-sm rounded-xl">
+                  <button className="size-14 bg-black/20 duration-200 hover:bg-neutral-800 cursor-pointer flex items-center justify-center border border-[#6a6a6a2d] shadow-sm shadow-black text-white/30 text-sm rounded-xl">
                     whop
-                  </div>
-                  <div className="size-16 bg-black/20 flex items-center justify-center border border-[#6a6a6a2d] shadow-sm shadow-black  text-white/30 text-sm rounded-xl">
+                  </button>
+                  <button className="size-16 bg-black/20 duration-200 hover:bg-neutral-800 cursor-pointer flex items-center justify-center border border-[#6a6a6a2d] shadow-sm shadow-black  text-white/30 text-sm rounded-xl">
                     AI
-                  </div>
-                  <div className="size-16 bg-black/20 flex items-center justify-center border border-[#6a6a6a2d] shadow-sm shadow-black  text-white/30 text-sm rounded-xl">
+                  </button>
+                  <button className="size-16 bg-black/20 duration-200 hover:bg-neutral-800 cursor-pointer flex items-center justify-center border border-[#6a6a6a2d] shadow-sm shadow-black  text-white/30 text-sm rounded-xl">
                     Last
-                  </div>
-                  <div className="size-14 bg-black/20 flex items-center justify-center border border-[#6a6a6a2d] shadow-sm shadow-black  text-white/30 text-sm rounded-xl">
+                  </button>
+                  <button className="size-14 bg-black/20 duration-200 hover:bg-neutral-800 cursor-pointer flex items-center justify-center border border-[#6a6a6a2d] shadow-sm shadow-black  text-white/30 text-sm rounded-xl">
                     New
-                  </div>
+                  </button>
                 </div>
               </div>
             </div>
@@ -201,7 +260,7 @@ function GeminiChat() {
                   className={`max-w-xl p-3 rounded-lg ${
                     message.role === "user"
                       ? "bg-[#242424] text-white/80"
-                      : "bg-gray-100 dark:bg-[#ffffff1c] text-neutral-100"
+                      : "bg-gray-100  dark:bg-[#ffffff11] text-neutral-100"
                   }`}
                 >
                   {message.content ||
@@ -216,12 +275,26 @@ function GeminiChat() {
         </div>
       </div>
       <div className=" dark:bg-[#212121c1] bg-[#adadadc1] border-[#ffffff1d] flex px-3 p-1 h-8 items-center justify-end gap-5">
-        <Link
-          href={"/settings"}
+        <button
+          onClick={handleNewConversation}
           className="flex gap-1 text-xs items-center text-white/40 hover:text-white/80"
         >
           new converstaion
-        </Link>
+        </button>
+         {/* Fügen Sie ein Dropdown oder Modal für die Historie hinzu */}
+  <div className="relative">
+    <button
+      onClick={() => {
+        const history = JSON.parse(localStorage.getItem("conversationHistory") || "[]");
+        if (history.length > 0) {
+          loadConversationFromHistory(history[history.length - 1].id);
+        }
+      }}
+      className="px-3 bg-black/20 duration-200 hover:bg-neutral-800 cursor-pointer flex items-center justify-center border border-[#6a6a6a2d] shadow-sm shadow-black text-white/30 text-sm rounded-sm"
+    >
+      Last
+    </button>
+  </div>
         <Link href={"/settings"} className="hover:text-white/80 text-white/40">
           <Cog size={14} />
         </Link>

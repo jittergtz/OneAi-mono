@@ -3,10 +3,13 @@ import { ChevronLeft as ChevronLeftIcon } from 'lucide-react'
 import Link from 'next/link'
 import React, { useState, useEffect } from 'react' // Import useEffect
 import { ChevronLeft } from 'lucide-react'
+import ThemePicker from './ThemePicker'
+import { useTheme } from '@/app/ThemeProvider'
 
 function SettingsPage() {
   const [apiKey, setApiKey] = useState('');
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
+   const { theme } = useTheme();
 
   useEffect(() => {
     // Load API key when component mounts
@@ -51,20 +54,20 @@ function SettingsPage() {
   return (
    <main className='p-5 min-h-screen'>
     <Link className='absolute text-white/70 hover:text-white top-4 left-4' href="/"><ChevronLeftIcon size={17} /></Link>
-    <h1 className='text-xl text-white/70 mt-6'>Settings</h1>
+    <h1 className={`text-xl mt-6 ${theme.textColor} `}>Settings</h1>
 
     <div className='p-1 mt-2 rounded-md bg-black/20'>
-    <form className="mt-4" onSubmit={handleSubmit}>
+    <form className="mt-2" onSubmit={handleSubmit}>
       <div className="mb-4">
       <label htmlFor="apiKey" className="block  ml-1 text-white/40 text-sm font-medium mb-2">
-        API Key
+      My API Key
       </label>
       <div className='flex items-center gap-1'>
       <input
         type="password"
         id="apiKey"
         name="apiKey"
-        className="w-full p-2 placeholder:text-[#ffffff8e]  border border-[#323131] rounded-md"
+        className="w-full p-2 placeholder:text-[#ffffff8e] outline-none text-[#9090908e]  border border-[#404040] rounded-md"
         placeholder="Enter your Gemini API key"
         value={apiKey}
         onChange={handleInputChange}
@@ -72,7 +75,7 @@ function SettingsPage() {
 
       <button
       type="submit"
-      className="bg-[#2641a1fa] p-2 text-white/80 px-4 rounded-md hover:bg-blue-600"
+      className="bg-[#5a5acefa] cursor-pointer  p-2 text-[#ffffff8b] px-4 rounded-md hover:bg-[#5a5aced1]"
       >
       Save
       </button>
@@ -85,7 +88,20 @@ function SettingsPage() {
         </div>
       )}
     </div>
+ 
+    <div className='p-1 mt-2 rounded-md bg-black/20'>
 
+      <div className="mb-4">
+      <label htmlFor="apiKey" className="block  ml-1 text-white/40 text-sm font-medium mb-2">
+     Themes
+      </label>
+      <div className='flex items-center gap-1'>
+    
+
+     <ThemePicker/>
+      </div>
+      </div>
+    </div>
 
    </main>
   )
