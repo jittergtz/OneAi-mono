@@ -6,6 +6,8 @@ import Link from "next/link"
 import { useState, useRef, useEffect } from "react"
 import { ConversationSelect } from "./Conversations"
 import DOMPurify from "dompurify";
+import { TextShimmer } from "../../components/motion-primitives/text-shimmer"
+import ReactMarkdown from 'react-markdown';
 
 // Message type definition
 type Message = {
@@ -253,6 +255,13 @@ function GeminiChat() {
     await sendMessage()
   }
 
+  const cleanHtml = (html: string) => {
+    return DOMPurify.sanitize(
+      html.replace(/^```html/, "").replace(/```$/, "").trim() // Entfernt ```html und ```
+    );
+  };
+  
+
   return (
     <div className="w-full to-transparent mx-auto">
       <div className="relative">
@@ -276,7 +285,7 @@ function GeminiChat() {
             </button>
           </form>
         </div>
-        <div className="space-y-4 mt-12 w-full h-[370px] overflow-x-scroll p-2 pt-2">
+        <div className="space-y-4 mt-12 w-full h-[390px] overflow-x-scroll p-2 pt-2">
           {messages.length === 0 ? (
             <div className="flex justify-center">
               <div className="flex mt-20 justify-center w-full max-w-sm flex-col gap-2">
@@ -310,6 +319,7 @@ function GeminiChat() {
                   message.role === "user" ? "justify-end" : "justify-start"
                 }`}
               >
+                
                 <div className={`flex gap-2 ${
                   message.role === "user" ? "items-center" : "items-start"
                 }`}>
@@ -323,20 +333,20 @@ function GeminiChat() {
                     className={`max-w-[650px] p-3 rounded-lg ${
                       message.role === "user"
                         ? `dark:bg-[#42424218] bg-gray-100/50 ${theme.textColor}`
-                        : `bg-neutral-100/30 dark:bg-[#ffffff11] ${theme.textColor}`
+                        : `bg-neutral-100/30 dark:bg-[#42424218] ${theme.textColor}`
                     }`}
                   >
                     {/* Show message content OR loading state */}
                     {message.content ? (
-                      <div
-                        dangerouslySetInnerHTML={{
-                          __html: DOMPurify.sanitize(message.content.replace(/^html\s*/, ''))
-                        }}
-                      />
+                  <div className="overflow-hidden"> 
+                   <ReactMarkdown  >{message.content}</ReactMarkdown>     
+                     </div>
                     ) : (
                       message.role === "assistant" &&
                       isLoading && (
-                        <div className="text-gray-500 italic animate-pulse">Thinking...</div>
+                        <TextShimmer className='font-mono text-sm' duration={1}>
+                        Thinking...
+                      </TextShimmer>
                       )
                     )}
                   </div>
@@ -389,6 +399,7 @@ function GeminiChat() {
           </Link>
         </div>
       </div>
+      
     </div>
   )
 }

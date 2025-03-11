@@ -30,6 +30,18 @@ function ThemePicker() {
       name: "Red",
       value: "red",
     },
+    {
+      name: "Carbon",
+      value: "carbon",
+    },
+    {
+      name: "Elo",
+      value: "elo",
+    },
+    {
+      name: "Sky",
+      value: "sky",
+    }
   ]
 
   const handleTheme = (value: string) => {

@@ -15,8 +15,8 @@ const getApiKeyFilePath = () => {
 
 const createWindow = async (): Promise<void> => {
   mainWindow = new BrowserWindow({
-    width: 700,
-    height: 450,
+    width: 750,
+    height: 470,
     frame: false,
     vibrancy: "under-window",
     resizable: false,
@@ -27,7 +27,11 @@ const createWindow = async (): Promise<void> => {
     },
   });
 
-  mainWindow.setAlwaysOnTop(true, "normal");
+// Damit das Fenster auf allen Spaces, auch im Vollbildmodus, angezeigt wird:
+mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+
+// Setze AlwaysOnTop mit einem höheren Level:
+mainWindow.setAlwaysOnTop(true, "screen-saver", 1);
 
   mainWindow.on("ready-to-show", () => mainWindow?.show());
 

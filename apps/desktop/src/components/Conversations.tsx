@@ -100,11 +100,9 @@ export function ConversationSelect({
       <SelectTrigger className="w-[180px] text-xs  dark:text-white/40 text-black/40  hover:text-white/70 h-10 border-none border-[#6a6a6a2d]">
         <SelectValue placeholder="Conversations" />
       </SelectTrigger>
-      <SelectContent className="dark:bg-[#212121] bg-[#5e5e5e] overflow-hidden h-57 overflow-y-scroll border-[#c5c2c22d]">
-        <SelectGroup>
-          <SelectLabel className="font-normal border-b border-[#747474] text-white/50">
-            Saved Conversations
-          </SelectLabel>
+      <SelectContent className="bg-[#0d0d0d59] backdrop-blur-lg  overflow-hidden h-64 overflow-y-scroll border-[#c5c2c22d]">
+        <SelectGroup >
+         
           {conversations.length === 0 ? (
             <div className="py-2 px-2 text-white/50 text-sm">
               No saved conversations
@@ -127,7 +125,7 @@ export function ConversationSelect({
                 </SelectItem>
                 <button
                   onClick={(e) => handleDelete(e, conv.id)}
-                  className="absolute right-2 p-1 rounded-sm bg-neutral-800 opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute right-0 p-1 rounded-sm bg-red-800/60 opacity-0 group-hover:opacity-100 transition-opacity"
                 >
                   <Trash2 className="h-4 w-4 text-red-500 hover:text-red-400" />
                 </button>

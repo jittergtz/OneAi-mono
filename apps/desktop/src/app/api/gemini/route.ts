@@ -90,10 +90,10 @@ export async function POST(req: NextRequest) {
 
     // Define system/role context based on search mode
     const roleContext = useSearch 
-      ? `You are a helpful assistant answering questions. Format responses in valid, well-structured HTML.
+      ? `You are a helpful assistant answering questions. Format response always in valid well structred Markdown.
          You have access to Google Search to provide up-to-date information on current events, facts, and data.
          When search results are available, incorporate them into your response while citing sources.`
-      : `You are a helpful assistant answering questions. Format responses in valid, well-structured HTML.
+      : `You are a helpful assistant answering questions. Format response always in valid well structred Markdown.
          Answer based on your knowledge and training data only.`;
     
     // Build conversation context from history (if provided)
@@ -136,7 +136,7 @@ export async function POST(req: NextRequest) {
       top_p: 0.95,
       top_k: 64,
       max_output_tokens: 8192,
-      response_mime_type: "text/html",
+      response_mime_type: "text/plain",
     };
 
     let model;
@@ -147,13 +147,13 @@ export async function POST(req: NextRequest) {
         // Use model with Google Search Retrieval when search is enabled
         console.log("Creating model with Google Search Retrieval enabled");
         model = genAI.getGenerativeModel({
-          model: "gemini-1.5-pro",
+          model: "gemini-2.0-flash",
           tools: [
             {
               googleSearchRetrieval: {
                 dynamicRetrievalConfig: {
-                  mode: DynamicRetrievalMode.AUTO,
-                  dynamicThreshold: 0.7,
+                  mode: DynamicRetrievalMode.MODE_DYNAMIC,
+                  dynamicThreshold: 0.2,
                 },
               },
             },
@@ -190,6 +190,7 @@ export async function POST(req: NextRequest) {
       result = await model.generateContentStream(fallbackPrompt, generationConfig);
     }
 
+
     // Create a ReadableStream for the response
     const stream = new ReadableStream({
       async start(controller) {
@@ -197,8 +198,9 @@ export async function POST(req: NextRequest) {
           console.log("Starting stream processing");
           for await (const chunk of result.stream) {
             let text = chunk.text();
-            text = text.replace(/^```html\s*/, "").replace(/```$/, "");
-            console.log("Chunk received:", text.substring(0, 20) + "...");
+          
+            // Log the first 100 characters of the text
+            console.log("Stream chunk:", text.substring(0, 100) + "...");
             controller.enqueue(new TextEncoder().encode(text));
           }
           console.log("Stream complete, closing controller");
@@ -213,7 +215,7 @@ export async function POST(req: NextRequest) {
     console.log("Returning stream response");
     return new Response(stream, {
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'text/plain; charset=utf-8',
         'Cache-Control': 'no-cache, no-transform',
         'X-Content-Type-Options': 'nosniff',
       },
