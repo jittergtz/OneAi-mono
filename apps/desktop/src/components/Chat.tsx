@@ -8,6 +8,7 @@ import { ConversationSelect } from "./Conversations"
 import DOMPurify from "dompurify";
 import { TextShimmer } from "../../components/motion-primitives/text-shimmer"
 import ReactMarkdown from 'react-markdown';
+import { toast, Toaster } from "sonner"; // Import Sonner
 
 // Message type definition
 type Message = {
@@ -50,6 +51,7 @@ function GeminiChat() {
   // Handle toggle search mode
   const toggleSearchMode = () => {
     setSearchEnabled(prevState => !prevState);
+    toast.info(`Search mode ${!searchEnabled ? "enabled" : "disabled"}`);
     // Optional: Show a toast or notification to the user
     // toast(`Search mode ${!searchEnabled ? 'enabled' : 'disabled'}`);
   };
@@ -264,6 +266,7 @@ function GeminiChat() {
 
   return (
     <div className="w-full to-transparent mx-auto">
+        <Toaster className="bg-black/20 border border-[#5a5a5a70]" position="top-right" /> 
       <div className="relative">
         <div className={`fixed border-b p-1 top-0 w-full ${theme.borderColor}`}>
           <form autoFocus onSubmit={handleSubmit} className="flex w-full gap-2">
@@ -272,7 +275,7 @@ function GeminiChat() {
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && sendMessage()}
-              placeholder="Type your message..."
+              placeholder="Ask anything..."
               disabled={isLoading}
               className="flex-1 bg-transparent dark:text-[#ffffffe5] text-[#171717e5] placeholder:text-[#2c2c2d94] dark:placeholder:text-[#d9e1ea94] outline-none border-neutral-500 p-2"
             />

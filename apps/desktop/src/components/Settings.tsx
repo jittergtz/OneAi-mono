@@ -1,11 +1,11 @@
 "use client"
-import { ChevronLeft as ChevronLeftIcon } from 'lucide-react'
+import { Box, ChevronLeft as ChevronLeftIcon, Globe } from 'lucide-react'
 import Link from 'next/link'
 import React, { useState, useEffect } from 'react' // Import useEffect
 import { ChevronLeft } from 'lucide-react'
 import ThemePicker from './ThemePicker'
 import { useTheme } from '@/app/ThemeProvider'
-import { InfoAccordion } from './ui/InfoAccordion'
+
 
 function SettingsPage() {
   const [apiKey, setApiKey] = useState('');
@@ -107,6 +107,38 @@ function SettingsPage() {
       </div>
     </div>
 
+    <div className='p-1 mt-2 flex flex-col gap-2 rounded-md bg-black/10'>
+    <label htmlFor="apiKey" className="block   ml-1 text-white/40 text-sm font-medium mb-2">
+     Important
+    </label>
+    
+    <div className='flex gap-2'>
+      <div className='flex flex-col gap-1'>
+      <div className='flex items-center gap-1 h-5 p-1 justify-center text-blue-500  rounded-full text-[10px] bg-blue-800/70'> Search <Globe className="size-3"/></div>
+      <div className='flex items-center gap-1 h-5 p-1 justify-center text-amber-500  rounded-full text-[10px] bg-amber-800/70'> Reason <Box className="size-3" strokeWidth={1.75} /> </div>
+      </div>
+     <p className='tracking-wide  px-1 text-white/60 text-xs'>
+      Live Search and Reason are only available with a pay-as-you-go API KEY from the Gemini API. 
+     <br /> You can upgrade to it here: <a
+  href="https://aistudio.google.com/plan_information"
+  onClick={(e) => {
+    e.preventDefault();
+    if (typeof window !== "undefined" && (window as any).require) {
+      // This will open the URL in the default browser
+      const { shell } = (window as any).require("electron");
+      shell.openExternal("https://aistudio.google.com/plan_information");
+    } else {
+      window.open("https://aistudio.google.com/plan_information", "_blank");
+    }
+  }}
+  className="text-blue-500 text-xs px-1 bg-blue-950/80 hover:bg-blue-200/20 rounded-sm"
+>
+  upgrade
+</a> or under: <span className='underline'>https://aistudio.google.com/plan_information</span></p>
+  </div>
+  </div>
+
+   
     <div className='p-1 mt-2 rounded-md bg-black/10'>
     <label htmlFor="apiKey" className="block  ml-1 text-white/40 text-sm font-medium mb-2">
      Informations

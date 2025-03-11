@@ -147,13 +147,13 @@ export async function POST(req: NextRequest) {
         // Use model with Google Search Retrieval when search is enabled
         console.log("Creating model with Google Search Retrieval enabled");
         model = genAI.getGenerativeModel({
-          model: "gemini-2.0-flash",
+          model: "gemini-1.5-flash",
           tools: [
             {
               googleSearchRetrieval: {
                 dynamicRetrievalConfig: {
                   mode: DynamicRetrievalMode.MODE_DYNAMIC,
-                  dynamicThreshold: 0.2,
+                  dynamicThreshold: 0.4,
                 },
               },
             },
