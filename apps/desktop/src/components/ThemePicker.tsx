@@ -41,7 +41,24 @@ function ThemePicker() {
     {
       name: "Sky",
       value: "sky",
-    }
+    },
+    {
+      name: "Stone",
+      value: "stone",
+    },
+    {
+      name: "Lava",
+      value: "lava",
+    },
+    {
+      name: "Prime",
+      value: "prime",
+    },
+    {
+      name: "Obsidian",
+      value: "obsidian",
+    },
+
   ]
 
   const handleTheme = (value: string) => {
@@ -49,7 +66,7 @@ function ThemePicker() {
   }
 
   return (
-    <div className="flex px-2 items-center gap-1 w-full overflow-x-scroll">
+    <div className="flex px-2 items-center gap-1 p-2 w-full overflow-x-scroll">
       {themes.map((theme) => (
         <button
           onClick={() => handleTheme(theme.value)}

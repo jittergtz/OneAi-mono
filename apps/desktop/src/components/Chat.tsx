@@ -8,7 +8,10 @@ import { ConversationSelect } from "./Conversations"
 import DOMPurify from "dompurify";
 import { TextShimmer } from "../../components/motion-primitives/text-shimmer"
 import ReactMarkdown from 'react-markdown';
-import { toast, Toaster } from "sonner"; // Import Sonner
+import { toast, Toaster } from 'sonner';
+import { NotifyReason, NotifySearch } from "./ui/Notify"
+import UiverseSearchComponent from "./ui/experimental/SearchUni"
+import ButtonSearch from "./ui/experimental/Button"
 
 // Message type definition
 type Message = {
@@ -48,13 +51,19 @@ function GeminiChat() {
   })
   const [searchEnabled, setSearchEnabled] = useState(false);
 
-  // Handle toggle search mode
-  const toggleSearchMode = () => {
-    setSearchEnabled(prevState => !prevState);
-    toast.info(`Search mode ${!searchEnabled ? "enabled" : "disabled"}`);
-    // Optional: Show a toast or notification to the user
-    // toast(`Search mode ${!searchEnabled ? 'enabled' : 'disabled'}`);
-  };
+ // Handle toggle search mode
+const toggleSearchMode = () => {
+  const newSearchState = !searchEnabled;
+  setSearchEnabled(newSearchState);
+  toast.custom((t) => (
+    <div className="-mt-[9px] pointer-events-none   items-center w-[170px] ml-[520px] flex justify-end">
+    <NotifySearch/>
+    </div>
+
+  ));
+}
+  
+  
 
   // Save changes to localStorage
   useEffect(() => {
@@ -266,7 +275,8 @@ function GeminiChat() {
 
   return (
     <div className="w-full to-transparent mx-auto">
-        <Toaster className="bg-black/20 border border-[#5a5a5a70]" position="top-right" /> 
+    <Toaster
+    position="top-start" />
       <div className="relative">
         <div className={`fixed border-b p-1 top-0 w-full ${theme.borderColor}`}>
           <form autoFocus onSubmit={handleSubmit} className="flex w-full gap-2">
@@ -279,16 +289,13 @@ function GeminiChat() {
               disabled={isLoading}
               className="flex-1 bg-transparent dark:text-[#ffffffe5] text-[#171717e5] placeholder:text-[#2c2c2d94] dark:placeholder:text-[#d9e1ea94] outline-none border-neutral-500 p-2"
             />
-            <button
-              disabled={isLoading}
-              className="dark:hover:bg-neutral-900/70 hover:bg-neutral-100/70 p-3 rounded-md dark:text-white/40 text-black/40"
-              type="submit"
-            >
-              <Send size={14} />
-            </button>
+             <ButtonSearch/>
+           
           </form>
+         
         </div>
-        <div className="space-y-4 mt-12 w-full h-[390px] overflow-x-scroll p-2 pt-2">
+      
+        <div className="space-y-4 mt-12 w-full h-[390px] overflow-y-scroll p-2 pt-2">
           {messages.length === 0 ? (
             <div className="flex justify-center">
               <div className="flex mt-20 justify-center w-full max-w-sm flex-col gap-2">
