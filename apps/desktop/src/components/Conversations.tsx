@@ -97,10 +97,10 @@ export function ConversationSelect({
       onOpenChange={setOpen}
       open={open}
     >
-      <SelectTrigger className="w-[180px] text-xs  dark:text-white/40 text-black/40  hover:text-white/70 h-10 border-none border-[#6a6a6a2d]">
+      <SelectTrigger className="w-[180px] text-xs conversationScroller dark:text-white/40 text-black/40  hover:text-white/70 h-10 border-none border-[#6a6a6a2d]">
         <SelectValue placeholder="Conversations" />
       </SelectTrigger>
-      <SelectContent className="bg-[#0d0d0d59] backdrop-blur-lg  overflow-hidden h-64 overflow-y-scroll border-[#c5c2c22d]">
+      <SelectContent className="bg-[#0d0d0d59] conversationScroller backdrop-blur-lg  overflow-hidden h-64 overflow-y-scroll border-[#c5c2c22d]">
         <SelectGroup >
          
           {conversations.length === 0 ? (

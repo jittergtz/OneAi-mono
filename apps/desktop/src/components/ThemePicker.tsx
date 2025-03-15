@@ -55,8 +55,8 @@ function ThemePicker() {
       value: "prime",
     },
     {
-      name: "Obsidian",
-      value: "obsidian",
+      name: "Yacht",
+      value: "yacht",
     },
 
   ]

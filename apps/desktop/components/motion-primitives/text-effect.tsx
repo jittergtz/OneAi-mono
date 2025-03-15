@@ -51,7 +51,7 @@ const defaultContainerVariants: Variants = {
     },
   },
   exit: {
-    transition: { staggerChildren: 0.05, staggerDirection: -1 },
+    transition: { staggerChildren: 0.5, staggerDirection: -1 },
   },
 };
 
@@ -197,7 +197,7 @@ const createVariantsWithTransition = (
           ? baseVariants.exit.transition
           : {}),
         ...mainTransition,
-        staggerDirection: -1,
+      
       },
     },
   };
@@ -212,7 +212,7 @@ export function TextEffect({
   preset = 'fade',
   delay = 0,
   speedReveal = 1,
-  speedSegment = 1,
+  speedSegment = 2,
   trigger = true,
   onAnimationComplete,
   onAnimationStart,
@@ -251,7 +251,7 @@ export function TextEffect({
         ...containerTransition,
         exit: {
           staggerChildren: customStagger ?? stagger,
-          staggerDirection: -1,
+          staggerDirection: 1,
         },
       }
     ),

@@ -1,10 +1,10 @@
 import { TextEffect } from "../../../components/motion-primitives/text-effect";
 import { TextScramble } from "../../../components/motion-primitives/text-scramble";
 
-export function NotifySearch() {
+export function NotifySearch({ searchState }: { searchState: boolean }) {
   return (
     <TextEffect per='char' className="text-white/80 text-sm" preset='fade'>
-  Search is enabled
+  {searchState ? "Search mode enabled" : "Search mode disabled"}
   </TextEffect>
   );
 }

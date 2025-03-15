@@ -35,10 +35,10 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
    
     stone: { bodyBackgroundColor: 'linear-gradient(180deg, #1C1817 10%, #371C1C 100%)', textColor: 'text-white/90', borderColor: 'border-white/10' },
     lava: { bodyBackgroundColor: 'linear-gradient(180deg, #1C1817 10%, #371C1C 100%)', textColor: 'text-white/90', borderColor: 'border-white/10' },
-    prime: { bodyBackgroundColor: 'linear-gradient(180deg, #1C1817 10%, #371C1C 100%)', textColor: 'text-white/90', borderColor: 'border-white/10' },
-    obsidian: { bodyBackgroundColor: 'linear-gradient(180deg, #1C1817 10%, #371C1C 100%)', textColor: 'text-white/90', borderColor: 'border-white/10' },
+    prime: { bodyBackgroundColor: 'linear-gradient(180deg, #2E6ED1 10%, #0A0B0C 100%)', textColor: 'text-white/90', borderColor: 'border-white/10' },
+    yacht: { bodyBackgroundColor: 'linear-gradient(18deg, #3F4248 50%, #505A67 140%)', textColor: 'text-white/90', borderColor: 'border-white/10' },
   };
-
+ 
   // Initialisiere das Theme aus dem localStorage oder verwende 'dark' als Fallback 
   const [currentTheme, setCurrentTheme] = useState<string>(() => {
     if (typeof window !== 'undefined') {

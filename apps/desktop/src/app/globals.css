@@ -87,3 +87,8 @@
     @apply bg-background text-foreground;
   }
 
+.conversationScroller {
+  ::-webkit-scrollbar {
+    display: hidden;
+  }
+}
