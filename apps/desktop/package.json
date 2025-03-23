@@ -80,6 +80,7 @@
     ],
     "files": [
       "build",
+       "out/**",
       {
         "from": ".next/standalone",
         "to": "app",

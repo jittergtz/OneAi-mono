@@ -27,12 +27,9 @@ const createWindow = async (): Promise<void> => {
     },
   });
 
-  // Damit das Fenster auf allen Spaces, auch im Vollbildmodus, angezeigt wird:
+  // Ensure Always on Top behavior
   mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
-
-  // Setze AlwaysOnTop mit einem höheren Level:
   mainWindow.setAlwaysOnTop(true, "screen-saver", 1);
-
   mainWindow.on("ready-to-show", () => mainWindow?.show());
 
   if (is.dev) {
@@ -40,50 +37,17 @@ const createWindow = async (): Promise<void> => {
       .loadURL("http://localhost:3000")
       .catch((error) => console.error("Error loading dev URL:", error));
   } else {
-    try {
-      const port = await startNextJSServer();
-      console.log("Next.js server started on port:", port);
-      
-      // Kurze Verzögerung, um dem Server Zeit zum Starten zu geben
-      await new Promise(resolve => setTimeout(resolve));
-      
-      mainWindow
-        .loadURL(`http://localhost:${port}`)
-        .catch((error) =>
-          console.error("Error loading production URL:", error)
-        );
-    } catch (error) {
-      console.error("Error starting Next.js server:", error);
-    }
+    // Load the static built Next.js app
+    const indexPath = path.join(app.getPath("userData"), "out", "index.html");
+
+    mainWindow.loadURL(`file://${indexPath}`).catch((error) =>
+      console.error("Error loading production file:", error)
+    );
+    
   }
 };
 
-const startNextJSServer = async () => {
-  try {
-    const nextJSPort = await getPort({ portRange: [3001, 5000] });
-    const appDir = join(app.getAppPath(), "app");
 
-    console.log("App directory:", appDir);
-
-    // Use the full path to the Next.js binary
-    const nextBinary = join(appDir, 'node_modules', '.bin', 'next');
-
-    // Start the Next.js server using the Next.js CLI
-    nextApp = fork(nextBinary, ['start', '-p', nextJSPort.toString()], {
-      cwd: appDir,
-      env: { ...process.env, PORT: nextJSPort.toString() }
-    });
-
-    // Log any output from the server
-    nextApp.stdout?.on('data', (data: Buffer) => console.log(`Next.js: ${data.toString()}`));
-    nextApp.stderr?.on('data', (data: Buffer) => console.error(`Next.js Error: ${data.toString()}`));
-
-    return nextJSPort;
-  } catch (error) {
-    console.error("Error starting Next.js server:", error);
-    throw error;
-  }
-};
 
 
 app.whenReady().then(() => {

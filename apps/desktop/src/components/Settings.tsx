@@ -54,7 +54,7 @@ function SettingsPage() {
 
   return (
    <main className='p-5 min-h-screen'>
-    <Link className='fixed text-white/70 hover:text-white top-4 left-4' href="/"><ChevronLeftIcon size={17} /></Link>
+    <Link className={`fixed hover:text-current/40  top-4 left-4 ${theme.textColor}`} href="/"><ChevronLeftIcon size={17} /></Link>
     <h1 className={`text-xl select-none  mt-6 ${theme.textColor} `}>Settings</h1>
 
     <div className='p-1 mt-2 rounded-md bg-black/20'>

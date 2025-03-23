@@ -23,7 +23,7 @@ function BottomNavigation( { searchEnabled, toggleSearchMode, handleNewConversat
       className={`text-xs flex items-center gap-1 ${
         searchEnabled
           ? "bg-blue-500/20 text-blue-500"
-          : "bg-neutral-600/20 text-neutral-600 hover:text-neutral-300 "
+          : "bg-neutral-700 text-neutral-500 hover:text-neutral-300 "
       } p-0.5 rounded-full px-2`}
       onClick={toggleSearchMode}
       title={
@@ -32,7 +32,7 @@ function BottomNavigation( { searchEnabled, toggleSearchMode, handleNewConversat
     >
       Search <Globe className="size-3" />
     </button>
-    <button className="text-xs flex items-center gap-1 bg-neutral-600/20 text-neutral-600 hover:text-amber-500 hover:bg-amber-500/20 p-0.5 rounded-full px-2">
+    <button className="text-xs flex items-center gap-1 bg-neutral-700 text-neutral-500 hover:text-amber-500 hover:bg-amber-500/20 p-0.5 rounded-full px-2">
       Reason <Box className="size-3" strokeWidth={1.75} />
     </button>
   </div>
@@ -42,7 +42,7 @@ function BottomNavigation( { searchEnabled, toggleSearchMode, handleNewConversat
     onClick={handleNewConversation}
     className="flex gap-1 text-xs items-center text-white/40  hover:text-white/80"
   >
-    New
+    New Chat
   </button>
   <div className="relative">
     <ConversationSelect

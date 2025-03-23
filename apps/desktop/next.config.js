@@ -1,11 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'standalone',
-  experimental: {
-    outputFileTracingRoot: process.env.NODE_ENV === 'production' 
-      ? undefined 
-      : process.cwd(),
-  }
-}
+  output: "export",
+};
 
-module.exports = nextConfig
+module.exports = nextConfig;

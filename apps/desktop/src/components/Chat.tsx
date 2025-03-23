@@ -297,14 +297,14 @@ function Chat() {
               }
               placeholder="Ask anything..."
               disabled={isLoading}
-              className="flex-1 bg-transparent text-[#ffffffe5] placeholder:select-none placeholder:text-[#d9e1ea94] outline-none border-neutral-500 p-2"
+              className={`flex-1 bg-transparent text-[#ffffffe5] placeholder:select-none placeholder:text-[#d9e1ea94] outline-none border-neutral-500 p-2 ${theme.placeholderColor} ${theme.textColor}`}
             />
             <button
               disabled={isLoading}
-              className="hover:bg-neutral-900/70 p-3 rounded-md text-white/40"
+              className=" p-3 rounded-md hover:cursor-pointer text-white/40"
               type="submit"
             >
-              <Send size={14} />
+              <Send className={`${theme.textColor}`} size={14} />
             </button>
           </form>
         </div>
@@ -312,14 +312,14 @@ function Chat() {
         <div className="space-y-4 mt-12 w-full h-[390px] overflow-y-scroll p-2 pt-2">
           {messages.length === 0 ? (
             <div className="flex justify-center">
-              <div className="flex mt-20 justify-center w-full max-w-sm flex-col gap-2">
-                <h1 className="text-center text-4xl dark:text-[#ffffff5a] text-[#5757575a]">
+              <div className="flex mt-20 select-none justify-center w-full max-w-sm flex-col gap-2">
+                <h1 className="text-center text-5xl dark:text-[#ffffff5a] text-[#5757575a]">
                   One
                 </h1>
-                <p className="text-center select-none pb-2 text-transparent bg-clip-text bg-gradient-to-r from-[#050505] via-[#9b9b9bcb] to-[#000000]">
+                <p className="text-center text-xl select-none pb-2 text-transparent bg-clip-text bg-gradient-to-r from-[#050505] via-[#9b9b9bcb] to-[#000000]">
                   Ask Anything
                 </p>
-                <div className="flex justify-center items-center gap-2">
+                {/* <div className="flex justify-center items-center gap-2">
                   <button className="size-14 bg-black/20 duration-200 hover:bg-neutral-800 cursor-pointer flex items-center justify-center border border-[#6a6a6a2d] shadow-sm shadow-black text-white/30 text-sm rounded-xl">
                     Image
                   </button>
@@ -332,7 +332,7 @@ function Chat() {
                   <button className="size-14 bg-black/20 duration-200 hover:bg-neutral-800 cursor-pointer flex items-center justify-center border border-[#6a6a6a2d] shadow-sm shadow-black text-white/30 text-sm rounded-xl">
                     New
                   </button>
-                </div>
+                </div> */}
               </div>
             </div>
           ) : (
@@ -363,7 +363,7 @@ function Chat() {
                   >
                     <MessageContainer message={message} isLoading={isLoading} />
                     {message.sources && message.sources.length > 0 && (
-                      <div className="mt-2  gap-2 flex items-center">
+                      <div className="mt-2  gap-2 select-none flex items-center">
                         <p className="text-sm text-neutral-400">Sources:</p>
                         <ul className="flex gap-2">
                           {message.sources.map((source, index) => (

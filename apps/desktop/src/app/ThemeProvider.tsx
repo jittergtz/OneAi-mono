@@ -6,6 +6,7 @@ interface Theme {
   bodyBackgroundColor: string;
   textColor: string;
   borderColor?: string;
+  placeholderColor?: string;
 }
 
 interface ThemeContextType {
@@ -22,7 +23,7 @@ interface ThemeProviderProps {
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const themes: { [key: string]: Theme } = {
-    light: { bodyBackgroundColor: 'linear-gradient(135deg, #ACACAC 50%, #F1F1F1 100%)', textColor: 'text-neutral-900', borderColor: 'border-black/10'  },
+    light: { bodyBackgroundColor: 'linear-gradient(180deg, #F5F5F5 10%, #E8E8E8 100%)', textColor: 'text-black/70', borderColor: 'border-black/20', placeholderColor: "placeholder:text-black/60" },
     dark: { bodyBackgroundColor: '#101010', textColor: 'text-white/80', borderColor: 'border-white/10' },
     system: { bodyBackgroundColor: '#00000000', textColor: 'text-white/80', borderColor: 'border-neutral-700' },
     glas: { bodyBackgroundColor: 'linear-gradient(135deg, #FDFDFD40 50%, #A0A0BD90 100%)', textColor: 'text-white/80' },
@@ -33,9 +34,9 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     sky: { bodyBackgroundColor: 'linear-gradient(135deg, #8989F1 50%, #0F0F6F 100%)', textColor: 'text-white/80', borderColor: 'border-white/20'},
     elo: { bodyBackgroundColor: 'linear-gradient(35deg, #4B888C 70%, #6CB0B5 100%)', textColor: 'text-white/90', borderColor: 'border-white/10' },
    
-    stone: { bodyBackgroundColor: 'linear-gradient(180deg, #1C1817 10%, #371C1C 100%)', textColor: 'text-white/90', borderColor: 'border-white/10' },
+    stone: { bodyBackgroundColor: 'linear-gradient(180deg, #436591 90%, #371C1C 100%)', textColor: 'text-white/90', borderColor: 'border-white/10' },
     lava: { bodyBackgroundColor: 'linear-gradient(180deg, #1C1817 10%, #371C1C 100%)', textColor: 'text-white/90', borderColor: 'border-white/10' },
-    prime: { bodyBackgroundColor: 'linear-gradient(180deg, #2E6ED1 10%, #0A0B0C 100%)', textColor: 'text-white/90', borderColor: 'border-white/10' },
+    prime: { bodyBackgroundColor: 'linear-gradient(180deg, #AFC5E1 10%, #D5E4F7 100%)', textColor: 'text-black/70', borderColor: 'border-white/10', placeholderColor: "placeholder:text-black/60" },
     yacht: { bodyBackgroundColor: 'linear-gradient(18deg, #3F4248 50%, #505A67 140%)', textColor: 'text-white/90', borderColor: 'border-white/10' },
   };
  
