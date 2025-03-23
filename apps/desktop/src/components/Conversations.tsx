@@ -90,10 +90,10 @@ export function ConversationSelect({
       onOpenChange={setOpen}
       open={open}
     >
-      <SelectTrigger className="w-[180px] text-xs conversationScroller text-white/40  hover:text-white/70 h-10 border-none border-[#6a6a6a2d]">
+      <SelectTrigger className="w-[180px]  scrollbar-hide  hover:bg-neutral-800 rounded-md  text-xs conversationScroller text-white/40  hover:text-white/70 h-7 border-none border-[#6a6a6a2d]">
         <SelectValue placeholder="Conversations" />
       </SelectTrigger>
-      <SelectContent className="bg-[#0d0d0d59] conversationScroller backdrop-blur-lg  overflow-hidden h-64 overflow-y-scroll border-[#c5c2c22d]">
+      <SelectContent className="bg-[#0d0d0d59]  scrollbar-hide conversationScroller backdrop-blur-lg  overflow-hidden h-64 overflow-y-scroll border-[#c5c2c22d]">
         <SelectGroup >
          
           {conversations.length === 0 ? (
@@ -104,7 +104,7 @@ export function ConversationSelect({
             conversations.map((conv) => (
               <div
                 key={conv.id}
-                className="relative flex items-center group hover:bg-neutral-800/30 rounded-sm"
+                className="relative flex  scrollbar-hide items-center group hover:bg-neutral-800/40 rounded-sm"
               >
                 <SelectItem
                   value={conv.id.toString()}

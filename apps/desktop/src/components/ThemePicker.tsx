@@ -66,7 +66,7 @@ function ThemePicker() {
   }
 
   return (
-    <div className="flex px-2 items-center gap-1 p-2 w-full overflow-x-scroll">
+    <div className="flex select-none px-2 items-center gap-1 p-2 w-full overflow-x-scroll">
       {themes.map((theme) => (
         <button
           onClick={() => handleTheme(theme.value)}

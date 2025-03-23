@@ -55,7 +55,7 @@ function SettingsPage() {
   return (
    <main className='p-5 min-h-screen'>
     <Link className='fixed text-white/70 hover:text-white top-4 left-4' href="/"><ChevronLeftIcon size={17} /></Link>
-    <h1 className={`text-xl  mt-6 ${theme.textColor} `}>Settings</h1>
+    <h1 className={`text-xl select-none  mt-6 ${theme.textColor} `}>Settings</h1>
 
     <div className='p-1 mt-2 rounded-md bg-black/20'>
     <form className="mt-2" onSubmit={handleSubmit}>
@@ -79,7 +79,7 @@ function SettingsPage() {
 
       <button
       type="submit"
-      className="border border-[#35343468] bg-[#1f1f1f68] cursor-pointer  p-2 text-[#ffffff8b] px-4 rounded-lg hover:bg-[#151516d1]"
+      className="border select-none border-[#35343468] bg-[#1f1f1f68] cursor-pointer  p-2 text-[#ffffff8b] px-4 rounded-lg hover:bg-[#151516d1]"
       >
       Save
       </button>
@@ -96,7 +96,7 @@ function SettingsPage() {
     <div className='p-1 mt-2 rounded-md bg-black/20'>
 
       <div className="mb-4">
-      <label htmlFor="theme" className="block  ml-1 text-white/40 text-sm font-medium mb-2">
+      <label htmlFor="theme" className="block select-none ml-1 text-white/40 text-sm font-medium mb-2">
      Themes
       </label>
       <div className='flex items-center gap-1'>

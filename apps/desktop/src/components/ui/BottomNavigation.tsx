@@ -13,7 +13,7 @@ interface BottomNavigationProps {
 function BottomNavigation( { searchEnabled, toggleSearchMode, handleNewConversation, loadConversationFromHistory }: BottomNavigationProps 
  ) {
   return (
-    <div className="bg-[#212121c1] h-8 overflow-hidden  border-[#ffffff1d] flex px-3 items-center justify-between gap-5">
+    <div className="bg-[#212121c1] select-none h-8 overflow-hidden  border-[#ffffff1d] flex px-3 items-center justify-between gap-5">
 <div>
   <div className="flex items-center gap-2">
     <span className="text-white/40  text-xs">
@@ -51,7 +51,7 @@ function BottomNavigation( { searchEnabled, toggleSearchMode, handleNewConversat
   </div>
   <Link
     href={"/settings"}
-    className="hover:text-white/80 text-white/40 "
+    className="hover:text-white/80  text-white/40 "
   >
     <Cog size={14} />
   </Link>
