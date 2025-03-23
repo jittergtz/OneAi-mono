@@ -3,13 +3,20 @@ import React from 'react'
 import { ConversationSelect } from '../Conversations'
 import { Box, Cog, Globe } from 'lucide-react'
 
-function BottomNavigation( { searchEnabled, toggleSearchMode, handleNewConversation, loadConversationFromHistory } 
+interface BottomNavigationProps {
+  searchEnabled: boolean;
+  toggleSearchMode: () => void;
+  handleNewConversation: () => void;
+  loadConversationFromHistory: (id: number | null) => void;
+}
+
+function BottomNavigation( { searchEnabled, toggleSearchMode, handleNewConversation, loadConversationFromHistory }: BottomNavigationProps 
  ) {
   return (
-    <div className="dark:bg-[#212121c1] h-8 overflow-hidden bg-[#adadadc1] border-[#ffffff1d] flex px-3 items-center justify-between gap-5">
+    <div className="bg-[#212121c1] h-8 overflow-hidden  border-[#ffffff1d] flex px-3 items-center justify-between gap-5">
 <div>
   <div className="flex items-center gap-2">
-    <span className="dark:text-white/40 text-black/40 text-xs">
+    <span className="text-white/40  text-xs">
       gemini-2.0-flash
     </span>
     <button
@@ -33,7 +40,7 @@ function BottomNavigation( { searchEnabled, toggleSearchMode, handleNewConversat
 <div className="flex items-center gap-2">
   <button
     onClick={handleNewConversation}
-    className="flex gap-1 text-xs items-center dark:text-white/40 text-black/40 hover:text-white/80"
+    className="flex gap-1 text-xs items-center text-white/40  hover:text-white/80"
   >
     New
   </button>
@@ -44,7 +51,7 @@ function BottomNavigation( { searchEnabled, toggleSearchMode, handleNewConversat
   </div>
   <Link
     href={"/settings"}
-    className="hover:text-white/80 dark:text-white/40 text-black/40"
+    className="hover:text-white/80 text-white/40 "
   >
     <Cog size={14} />
   </Link>

@@ -269,7 +269,7 @@ import {
             console.log(
               JSON.stringify(response.candidates[0].groundingMetadata, null, 2)
             )
-            groundingMetadata = response.candidates[0].groundingMetadata as GroundingMetadata;
+            groundingMetadata = response.candidates[0].groundingMetadata as unknown as GroundingMetadata;
             console.log("--- End of Grounding Metadata ---")
           }
         }
@@ -349,6 +349,7 @@ import {
                               sourceLinks.push({
                                 title: searchResult.title,
                                 url: searchResult.url,
+                             
                               });
                             }
                           }
@@ -370,7 +371,9 @@ import {
               new TextEncoder().encode(
                 JSON.stringify({ 
                   text: fullText, 
-                  sourceLinks: sourceLinks 
+                  sourceLinks: sourceLinks ,
+                  searchEntryPoint: groundingMetadata?.webSearchQueries?.[0]
+
                 })
               )
             )

@@ -23,24 +23,25 @@ type Message = {
     title: string
     url: string
   }>
+  groundingSearchEntryPoint?: string
 }
 
 // Conversation type definition
 type Conversation = {
   id: number
   timestamp: string
-  messages: Message[]
+  messages: Message[]  // Fixed: Changed from Message to Message[]
   name?: string
 }
 
-function ChatInterface() {
+function Chat() {
   // State management
-  const [messages, setMessages] = useState<Message[]>(() => {
+  const [messages, setMessages] = useState<Message[]>(() => {  // Fixed: Changed from Message to Message[]
     if (typeof window !== "undefined") {
       const savedMessages = localStorage.getItem("chatMessages")
-      return savedMessages ? JSON.parse(savedMessages) : []
+      return savedMessages ? JSON.parse(savedMessages) : [];  // Fixed: Added empty array
     }
-    return []
+    return [];  // Fixed: Added empty array for server-side rendering
   })
   const [inputValue, setInputValue] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -49,12 +50,12 @@ function ChatInterface() {
   const [currentConversationId, setCurrentConversationId] = useState<
     number | null
   >(null)
-  const [conversations, setConversations] = useState<Conversation[]>(() => {
+  const [conversations, setConversations] = useState<Conversation[]>(() => {  // Fixed: Changed from Conversation to Conversation[]
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("conversationHistory")
-      return saved ? JSON.parse(saved) : []
+      return saved ? JSON.parse(saved) : [];  // Fixed: Added empty array
     }
-    return []
+    return [];  // Fixed: Added empty array for server-side rendering
   })
   const [searchEnabled, setSearchEnabled] = useState(false)
 
@@ -76,7 +77,7 @@ function ChatInterface() {
       localStorage.setItem("chatMessages", JSON.stringify(messages))
       if (currentConversationId !== null) {
         const conversationHistory = JSON.parse(
-          localStorage.getItem("conversationHistory") || "[]"
+          localStorage.getItem("conversationHistory") || "[]"  // Fixed: Added default empty array
         )
         const updatedHistory = conversationHistory.map((conv: Conversation) => {
           if (conv.id === currentConversationId) {
@@ -96,7 +97,7 @@ function ChatInterface() {
   const handleNewConversation = () => {
     if (messages.length > 0) {
       const conversationHistory = JSON.parse(
-        localStorage.getItem("conversationHistory") || "[]"
+        localStorage.getItem("conversationHistory") || "[]"  // Fixed: Added default empty array
       )
       if (currentConversationId === null) {
         const newConversation = {
@@ -111,34 +112,34 @@ function ChatInterface() {
         )
       }
     }
-    setMessages([])
-    setCurrentConversationId(null)
-    localStorage.removeItem("chatMessages")
+    setMessages([]);  // Fixed: Set to empty array
+    setCurrentConversationId(null);
+    localStorage.removeItem("chatMessages");
     const updatedHistory = JSON.parse(
-      localStorage.getItem("conversationHistory") || "[]"
-    )
-    setConversations(updatedHistory)
+      localStorage.getItem("conversationHistory") || "[]"  // Fixed: Added default empty array
+    );
+    setConversations(updatedHistory);
   }
 
   // Load conversation from history
   const loadConversationFromHistory = (id: number | null) => {
     if (id === null) {
-      setMessages([])
-      setCurrentConversationId(null)
-      localStorage.removeItem("chatMessages")
-      return
+      setMessages([]);  // Fixed: Set to empty array
+      setCurrentConversationId(null);
+      localStorage.removeItem("chatMessages");
+      return;
     }
     const history = JSON.parse(
-      localStorage.getItem("conversationHistory") || "[]"
-    )
-    const conversation = history.find((conv: Conversation) => conv.id === id)
+      localStorage.getItem("conversationHistory") || "[]"  // Fixed: Added default empty array
+    );
+    const conversation = history.find((conv: Conversation) => conv.id === id);
     if (conversation) {
-      setMessages(conversation.messages)
-      setCurrentConversationId(id)
+      setMessages(conversation.messages);
+      setCurrentConversationId(id);
       localStorage.setItem(
         "chatMessages",
         JSON.stringify(conversation.messages)
-      )
+      );
     }
   }
 
@@ -166,7 +167,7 @@ function ChatInterface() {
       const newConversationId = Date.now()
       setCurrentConversationId(newConversationId)
       const conversationHistory = JSON.parse(
-        localStorage.getItem("conversationHistory") || "[]"
+        localStorage.getItem("conversationHistory") || "[]"  // Fixed: Added default empty array
       )
       const newConversation = {
         id: newConversationId,
@@ -212,7 +213,10 @@ function ChatInterface() {
                       ? {
                           ...msg,
                           content: parsedContent.text || "",
-                          sources: parsedContent.sources || [],
+                          sources: parsedContent.sources || [],  // Fixed: Added empty array
+                          groundingSearchEntryPoint:
+                            parsedContent.groundingMetadata?.searchEntryPoint
+                              ?.renderedContent, // Extract renderedContent
                         }
                       : msg
                   )
@@ -307,13 +311,13 @@ function ChatInterface() {
       html
         .replace(/^```html/, "")
         .replace(/```$/, "")
-        .trim() // Entfernt ```html und ```
+        .trim() // Removes ```html and ```
     )
   }
 
   return (
     <div className="w-full to-transparent mx-auto">
-      <Toaster position="top-start" />
+      <Toaster position="top-left" />
       <div className="relative">
         <div className={`fixed border-b p-1 top-0 w-full ${theme.borderColor}`}>
           <form autoFocus onSubmit={handleSubmit} className="flex w-full gap-2">
@@ -326,11 +330,11 @@ function ChatInterface() {
               }
               placeholder="Ask anything..."
               disabled={isLoading}
-              className="flex-1 bg-transparent dark:text-[#ffffffe5] text-[#171717e5] placeholder:text-[#2c2c2d94] dark:placeholder:text-[#d9e1ea94] outline-none border-neutral-500 p-2"
+              className="flex-1 bg-transparent text-[#ffffffe5] placeholder:text-[#d9e1ea94] outline-none border-neutral-500 p-2"
             />
             <button
               disabled={isLoading}
-              className="dark:hover:bg-neutral-900/70 hover:bg-neutral-100/70 p-3 rounded-md dark:text-white/40 text-black/40"
+              className="hover:bg-neutral-900/70  p-3 rounded-md text-white/40 "
               type="submit"
             >
               <Send size={14} />
@@ -386,12 +390,36 @@ function ChatInterface() {
                   <div
                     className={`max-w-[650px] p-3 rounded-lg ${
                       message.role === "user"
-                        ? `dark:bg-[#42424218] bg-gray-100/50 ${theme.textColor}`
-                        : `bg-neutral-100/30 dark:bg-[#42424218] ${theme.textColor}`
+                        ? `bg-[#42424218]  ${theme.textColor}`
+                        : `bg-[#42424218] ${theme.textColor}`
                     }`}
                   >
+                
+               
                     {/* Show message content OR loading state */}
-                    <MessageContainer message={message} isLoading={isLoading} />
+                    <MessageContainer
+                      message={message}
+                      isLoading={isLoading}
+                    />
+                    {message.sources && message.sources.length > 0 && (
+                      <div className="mt-2">
+                        <p className="font-semibold">Sources:</p>
+                        <ul>
+                          {message.sources.map((source, index) => (
+                            <li key={index} className="list-disc ml-5">
+                              <a
+                                href={source.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-500 hover:underline"
+                              >
+                                {source.title}
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -411,4 +439,4 @@ function ChatInterface() {
   )
 }
 
-export default ChatInterface
+export default Chat

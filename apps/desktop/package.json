@@ -2,7 +2,7 @@
   "name": "one",
   "version": "0.0.1",
   "private": true,
-  "homepage": "https://saybackend.com",
+  "homepage": "https://one.com",
   "author": {
     "name": "one",
     "email": "sandro@one.com",
@@ -12,6 +12,7 @@
   "description": "One, all in one ai shortcut tool",
   "scripts": {
     "next:dev": "next dev",
+    "next:yolobuild": "next build --no-lint",
     "next:build": "next build",
     "next:start": "next start",
     "next:lint": "next lint",

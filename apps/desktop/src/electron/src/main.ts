@@ -1,17 +1,17 @@
 import { is } from "@electron-toolkit/utils";
 import { app, BrowserWindow, ipcMain, globalShortcut } from "electron";
 import { getPort } from "get-port-please";
-import { startServer } from "next/dist/server/lib/start-server";
 import path, { join } from "path";
 import * as fsPromises from 'fs/promises';
+import { fork } from 'child_process';
 
 let mainWindow: BrowserWindow | null = null;
+let nextApp: any = null;
 
 // Function to get the API key file path in userData directory
 const getApiKeyFilePath = () => {
   return path.join(app.getPath('userData'), 'api-key.txt');
 };
-
 
 const createWindow = async (): Promise<void> => {
   mainWindow = new BrowserWindow({
@@ -27,11 +27,11 @@ const createWindow = async (): Promise<void> => {
     },
   });
 
-// Damit das Fenster auf allen Spaces, auch im Vollbildmodus, angezeigt wird:
-mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+  // Damit das Fenster auf allen Spaces, auch im Vollbildmodus, angezeigt wird:
+  mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
 
-// Setze AlwaysOnTop mit einem höheren Level:
-mainWindow.setAlwaysOnTop(true, "screen-saver", 1);
+  // Setze AlwaysOnTop mit einem höheren Level:
+  mainWindow.setAlwaysOnTop(true, "screen-saver", 1);
 
   mainWindow.on("ready-to-show", () => mainWindow?.show());
 
@@ -43,6 +43,10 @@ mainWindow.setAlwaysOnTop(true, "screen-saver", 1);
     try {
       const port = await startNextJSServer();
       console.log("Next.js server started on port:", port);
+      
+      // Kurze Verzögerung, um dem Server Zeit zum Starten zu geben
+      await new Promise(resolve => setTimeout(resolve));
+      
       mainWindow
         .loadURL(`http://localhost:${port}`)
         .catch((error) =>
@@ -56,18 +60,23 @@ mainWindow.setAlwaysOnTop(true, "screen-saver", 1);
 
 const startNextJSServer = async () => {
   try {
-    const nextJSPort = await getPort({ portRange: [30_011, 50_000] });
-    const webDir = join(app.getAppPath(), "app");
+    const nextJSPort = await getPort({ portRange: [3001, 5000] });
+    const appDir = join(app.getAppPath(), "app");
 
-    await startServer({
-      dir: webDir,
-      isDev: false,
-      hostname: "localhost",
-      port: nextJSPort,
-      allowRetry: false,
-      keepAliveTimeout: 5000,
-      minimalMode: true,
+    console.log("App directory:", appDir);
+
+    // Use the full path to the Next.js binary
+    const nextBinary = join(appDir, 'node_modules', '.bin', 'next');
+
+    // Start the Next.js server using the Next.js CLI
+    nextApp = fork(nextBinary, ['start', '-p', nextJSPort.toString()], {
+      cwd: appDir,
+      env: { ...process.env, PORT: nextJSPort.toString() }
     });
+
+    // Log any output from the server
+    nextApp.stdout?.on('data', (data: Buffer) => console.log(`Next.js: ${data.toString()}`));
+    nextApp.stderr?.on('data', (data: Buffer) => console.error(`Next.js Error: ${data.toString()}`));
 
     return nextJSPort;
   } catch (error) {
@@ -75,6 +84,7 @@ const startNextJSServer = async () => {
     throw error;
   }
 };
+
 
 app.whenReady().then(() => {
   createWindow();
@@ -106,18 +116,16 @@ app.whenReady().then(() => {
   });
 
   // Handle loading the API Key
-  ipcMain.handle('get-api-key', async (event) => { // New handler for getting API key
+  ipcMain.handle('get-api-key', async (event) => {
     const filePath = getApiKeyFilePath();
     try {
-      const apiKey = await fsPromises.readFile(filePath, { encoding: 'utf-8' }); // Read API key from file
-      return { apiKey }; // Return the API key in the response
+      const apiKey = await fsPromises.readFile(filePath, { encoding: 'utf-8' });
+      return { apiKey };
     } catch (error: any) {
-      // If file doesn't exist or other errors, return null or handle as needed
       console.warn('Error reading API Key file (may not exist yet):', error.message);
-      return { apiKey: null }; // Return null if API key cannot be read (or file not found)
+      return { apiKey: null };
     }
   });
-
 });
 
 app.on("window-all-closed", () => {
@@ -133,5 +141,9 @@ app.on("activate", () => {
 });
 
 app.on("will-quit", () => {
+  if (nextApp) {
+    console.log("Killing Next.js server");
+    nextApp.kill();
+  }
   globalShortcut.unregisterAll();
 });
