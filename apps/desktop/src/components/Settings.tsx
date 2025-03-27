@@ -54,8 +54,8 @@ function SettingsPage() {
 
   return (
    <main className='p-5 min-h-screen'>
-    <Link className={`fixed hover:text-current/40  top-4 left-4 ${theme.textColor}`} href="/"><ChevronLeftIcon size={17} /></Link>
-    <h1 className={`text-xl select-none  mt-6 ${theme.textColor} `}>Settings</h1>
+    <Link className={`fixed duration-200 hover:bg-neutral-500 p-1 rounded-full  top-4 left-4 ${theme.textColor}`} href="/"><ChevronLeftIcon size={17} /></Link>
+    <h1 className={`text-xl select-none mt-6 ${theme.textColor}`}>Settings</h1>
 
     <div className='p-1 mt-2 rounded-md bg-black/20'>
     <form className="mt-2" onSubmit={handleSubmit}>
@@ -119,7 +119,7 @@ function SettingsPage() {
       </div>
      <p className='tracking-wide  px-1 text-white/60 text-xs'>
       Live Search and Reason are only available with a pay-as-you-go API KEY from the Gemini API. 
-     <br /> You can upgrade to it here: <a
+     <br /> You can upgrade to it here:<a
   href="https://aistudio.google.com/plan_information"
   onClick={(e) => {
     e.preventDefault();

@@ -1,15 +1,11 @@
 "use client"
 
 import { useTheme } from "@/app/ThemeProvider"
-import Link from "next/link"
 import { useState, useRef, useEffect } from "react"
-import { ConversationSelect } from "./Conversations"
 import DOMPurify from "dompurify"
-import { TextShimmer } from "../../components/motion-primitives/text-shimmer"
-import ReactMarkdown from "react-markdown"
 import { toast, Toaster } from "sonner"
-import { NotifyReason, NotifySearch } from "./ui/Notify"
-import { Box, Cog, Globe, Send, Sparkles, User } from "lucide-react"
+import {  NotifySearch } from "./ui/Notify"
+import { Send, Sparkles, User } from "lucide-react"
 import MessageContainer from "./ui/MessageContainer"
 import BottomNavigation from "./ui/BottomNavigation"
 
@@ -365,14 +361,14 @@ function Chat() {
                     {message.sources && message.sources.length > 0 && (
                       <div className="mt-2  gap-2 select-none flex items-center">
                         <p className="text-sm text-neutral-400">Sources:</p>
-                        <ul className="flex gap-2">
+                        <ul className="flex gap-1">
                           {message.sources.map((source, index) => (
                             <div key={index} className="">
                               <a
                                 href={source.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-neutral-400 p-1  text-xs rounded-xl px-3 bg-neutral-800 border border-[#595858]  hover:text-white/90 "
+                                className="text-neutral-400 p-1  text-xs rounded-xl px-3 bg-neutral-800 hover:bg-neutral-900/80 border border-[#343434] "
                               >
                                 {source.title}
                               </a>
