@@ -22,7 +22,9 @@
       }
     ],
     "paths": {
-      "react": ["./node_modules/@types/react"],
+      "react": [
+        "./node_modules/@types/react"
+      ],
       "@/*": [
         "./src/*"
       ]
@@ -34,8 +36,10 @@
     "electron.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts"
-, "next.config.js"  ],
+    ".next/types/**/*.ts",
+    "next.config.js",
+    "out/types/**/*.ts"
+  ],
   "exclude": [
     "node_modules"
   ]

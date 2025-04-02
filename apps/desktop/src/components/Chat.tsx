@@ -391,6 +391,7 @@ function Chat() {
         toggleSearchMode={toggleSearchMode}
         handleNewConversation={handleNewConversation}
         loadConversationFromHistory={loadConversationFromHistory}
+          settingsHref="/settings"
       />
     </div>
   )
