@@ -57,7 +57,7 @@ function Chat() {
     const newSearchState = !searchEnabled
     setSearchEnabled(newSearchState)
     toast.custom((t) => (
-      <div className="-mt-[9px] pointer-events-none items-center w-[170px] ml-[520px] flex justify-end">
+      <div className="-mt-[9px]  items-center top-0 w-[170px] absolute left-[500px] flex justify-end">
         <NotifySearch searchState={newSearchState} />
       </div>
     ))
