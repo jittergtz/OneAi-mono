@@ -6,6 +6,7 @@ contextBridge.exposeInMainWorld("electron", {
     on: (channel: string, listener: (event: any, ...args: any[]) => void) => ipcRenderer.on(channel, listener),
     invoke: (channel: string, data: any) => ipcRenderer.invoke(channel, data),
   },
-  // Neue Navigation-Funktion hinzufügen
+  // Navigation function
   navigate: (path: string) => ipcRenderer.invoke('navigate', path),
+
 });

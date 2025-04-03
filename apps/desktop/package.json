@@ -11,16 +11,22 @@
   "main": "build/main.js",
   "description": "One, all in one ai shortcut tool",
   "scripts": {
-  
-  "dev": "next dev",
-  "next:build": "next build", 
-  "electron:build": "tsup",
-  "build": "npm run next:build && npm run electron:build", 
-  "start": "cross-env NODE_ENV=production electron .",
-  "next:dev": "npm-run-all -p next:dev electron:build",
-  "dist": "npm run build && electron-builder",
-  "dist:mac": "npm run build && electron-builder --mac"
-
+    "next:dev": "next dev",
+    "next:build": "next build",
+    "next:start": "next start",
+    "next:lint": "next lint",
+    "format": "dprint fmt",
+    "postinstall": "electron-builder install-app-deps",
+    "electron:dist": "electron-builder --dir",
+    "electron:dist:deb": "electron-builder --linux deb",
+    "dist:mac": "electron-builder --mac",
+    "electron:build": "tsup",
+    "build": "run-s next:build electron:build",
+    "dist": "run-s build electron:dist",
+    "dev": "npm-run-all --parallel electron:dev next:dev",
+    "electron:build_watch": "tsup --watch",
+    "electron:dev": "npm-run-all --parallel electron:build_watch electron:watch",
+    "electron:watch": "cross-env NODE_ENV='development' nodemon"
   },
   "dependencies": {
     "@electron-toolkit/utils": "^3.0.0",
@@ -62,41 +68,49 @@
     "tsup": "^8.2.4",
     "typescript": "^5.5.4"
   },
-"build": {
-  "asar": true,
-  "executableName": "One",
-  "appId": "com.one.app",
-  "asarUnpack": [
-    "node_modules/next",
-    "node_modules/@img",
-    "node_modules/sharp",
-    "**\\*.{node,dll}"
-  ],
-  "files": [
-    "build/**/*",
-    "out/**/*",
-    ".next/**/*",
-    "package.json"
-  ],
-  "extraResources": [
-    {
-      "from": "public",
-      "to": "public"
-    }
-  ],
-  "win": {
-    "target": [
-      "nsis"
-    ]
-  },
-  "linux": {
-    "target": [
-      "deb"
+  "build": {
+    "asar": true,
+    "executableName": "One",
+    "appId": "com.one.app",
+    "asarUnpack": [
+      "node_modules/next",
+      "node_modules/@img",
+      "node_modules/sharp",
+      "**\\*.{node,dll}"
     ],
-    "category": "Development"
-  },
-  "mac": {
-    "icon": "public/one-logo.icns"
+    "files": [
+      "build",
+      "out/**",
+      {
+        "from": ".next/standalone",
+        "to": "app",
+        "filter": [
+          "!**/.env",
+          "!**/package.json"
+        ]
+      },
+      {
+        "from": ".next/static",
+        "to": "app/.next/static"
+      },
+      {
+        "from": "public",
+        "to": "app/public"
+      }
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    },
+    "linux": {
+      "target": [
+        "deb"
+      ],
+      "category": "Development"
+    },
+    "mac": {
+      "icon": "public/one-logo.icns"
+    }
   }
-}
 }

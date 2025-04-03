@@ -1,16 +1,7 @@
 import Link from 'next/link'
-import React from 'react'
+import React, { ReactNode, useEffect, useState } from 'react'
 import { ConversationSelect } from '../Conversations'
 import { Box, Cog, Globe } from 'lucide-react'
-import { useRouter } from 'next/router';
-import { ReactNode } from 'react';
-
-
-interface ElectronLinkProps {
-  href: string;
-  children: ReactNode;
-  className?: string;
-}
 
 declare global {
   interface Window {
@@ -30,7 +21,7 @@ interface BottomNavigationProps {
   toggleSearchMode: () => void;
   handleNewConversation: () => void;
   loadConversationFromHistory: (id: number | null) => void;
-  settingsHref: string; // Change to just a string for the settings URL
+  settingsHref: string;
 }
 
 function BottomNavigation({ 
@@ -40,11 +31,33 @@ function BottomNavigation({
   loadConversationFromHistory, 
   settingsHref 
 }: BottomNavigationProps) {
+  // Check if we're in development mode
+  const [isDev, setIsDev] = useState(false);
+  
+  useEffect(() => {
+    // In development, we'll have a dev server running on a specific port
+    // Production builds will have the app:// protocol or file:// protocol
+    const isDevServer = window.location.protocol === 'http:' || 
+                        window.location.protocol === 'https:';
+    setIsDev(isDevServer);
+  }, []);
 
   const handleNavigate = async (e: React.MouseEvent, path: string) => {
-    e.preventDefault();
-    if (window.electron) {
-      await window.electron.navigate(path);
+    if (isDev) {
+      // Let Next.js handle routing in dev mode
+      return true;
+    } else {
+      // Use Electron navigation in production mode
+      e.preventDefault();
+      if (window.electron) {
+        try {
+          await window.electron.navigate(path);
+        } catch (error) {
+          console.error('Navigation error:', error);
+          // Fallback
+          window.location.href = path;
+        }
+      }
     }
   }
 
@@ -85,6 +98,11 @@ function BottomNavigation({
             onSelectConversation={loadConversationFromHistory}
           />
         </div>
+        {isDev ? (
+          <div>Dev mode</div>
+        ):(
+          <div>Prod mode</div>
+        )}
         <Link 
           href={settingsHref} 
           onClick={(e) => handleNavigate(e, settingsHref)}

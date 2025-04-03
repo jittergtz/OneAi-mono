@@ -6,6 +6,7 @@ import { ChevronLeft } from 'lucide-react'
 import ThemePicker from './ThemePicker'
 import { useTheme } from '@/app/ThemeProvider'
 import ElectronLink from './ui/experimental/ElectronBackLink'
+import ElectronBackLink from './ui/experimental/ElectronBackLink'
 
 
 function SettingsPage() {
@@ -55,8 +56,10 @@ function SettingsPage() {
 
   return (
    <main className='p-5 min-h-screen'>
-    <ElectronLink className='fixed duration-200 hover:bg-neutral-500 p-1 rounded-full  top-4 left-4' href={'/'}><ChevronLeftIcon size={17} /></ElectronLink>
-    <Link className={`fixed duration-200 hover:bg-neutral-500 p-1 rounded-full  top-4 left-4 ${theme.textColor}`} href="/"></Link>
+        <ElectronBackLink 
+      className={`fixed duration-200 hover:bg-neutral-500 p-1 rounded-full top-4 left-4 ${theme.textColor}`} 
+      href="/"
+    />
     <h1 className={`text-xl select-none mt-6 ${theme.textColor}`}>Settings</h1>
 
     <div className='p-1 mt-2 rounded-md bg-black/20'>

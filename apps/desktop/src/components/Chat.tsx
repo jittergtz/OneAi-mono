@@ -359,7 +359,7 @@ function Chat() {
                   >
                     <MessageContainer message={message} isLoading={isLoading} />
                     {message.sources && message.sources.length > 0 && (
-                      <div className="mt-2  gap-2 select-none flex items-center">
+                      <div className="mt-2 overflow-x-auto overflow-y-hidden conversationScroller p-0.5 gap-2 select-none flex items-center">
                         <p className="text-sm text-neutral-400">Sources:</p>
                         <ul className="flex gap-1">
                           {message.sources.map((source, index) => (
@@ -391,7 +391,7 @@ function Chat() {
         toggleSearchMode={toggleSearchMode}
         handleNewConversation={handleNewConversation}
         loadConversationFromHistory={loadConversationFromHistory}
-          settingsHref="/settings"
+        settingsHref="/settings"
       />
     </div>
   )
