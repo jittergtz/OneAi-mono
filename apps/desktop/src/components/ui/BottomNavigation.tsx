@@ -98,15 +98,12 @@ function BottomNavigation({
             onSelectConversation={loadConversationFromHistory}
           />
         </div>
-        {isDev ? (
-          <div>Dev mode</div>
-        ):(
-          <div>Prod mode</div>
-        )}
+   
         <Link 
           href={settingsHref} 
           onClick={(e) => handleNavigate(e, settingsHref)}
           className="hover:text-white/80 text-white/40"
+          draggable={false}
         >
           <Cog size={14} />
         </Link>

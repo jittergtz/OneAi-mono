@@ -2,6 +2,7 @@ import { is } from "@electron-toolkit/utils";
 import { app, BrowserWindow, ipcMain, globalShortcut, nativeImage } from "electron";
 import path, { join } from "path";
 import * as fsPromises from 'fs/promises';
+import { GeminiService, getApiKeyFilePath } from "@/services/GeminiService";
 
 app.whenReady().then(() => {
   if (process.platform === "darwin") {
@@ -14,7 +15,6 @@ app.whenReady().then(() => {
 let mainWindow: BrowserWindow | null = null;
 
 // Function to get the API key file path in userData directory
-const getApiKeyFilePath = () => path.join(app.getPath('userData'), 'api-key.txt');
 
 const createWindow = async (): Promise<void> => {
   mainWindow = new BrowserWindow({
@@ -129,6 +129,83 @@ ipcMain.handle('navigate', async (event, targetPath) => {
       console.error("Failed to load fallback page:", fallbackError);
       return { success: false, error: `${error.message}, fallback also failed: ${fallbackError.message}` };
     }
+  }
+});
+
+
+
+
+
+
+
+
+
+
+
+ipcMain.handle('gemini-api-request', async (event, requestData) => {
+  try {
+    // Get API key
+    const filePath = getApiKeyFilePath();
+    let apiKey: string | null = null;
+    try {
+      const apiKeyFromFile = await fsPromises.readFile(filePath, {
+        encoding: "utf-8",
+      });
+      apiKey = apiKeyFromFile.trim();
+      console.log("API Key loaded from file.");
+    } catch (readError) {
+      return {
+        success: false,
+        error: "API Key not found. Please configure in settings."
+      };
+    }
+
+    // Initialize service
+    const geminiService = new GeminiService(apiKey);
+    
+    // Process the request - this returns a ReadableStream
+    const stream = await geminiService.processRequest(requestData);
+    
+    // Since we can't directly send a ReadableStream over IPC,
+    // we need to consume it and send chunks back to the renderer
+    const reader = stream.getReader();
+    
+    // Use a unique channel ID for this stream
+    const channelId = `gemini-stream-${Date.now()}`;
+    
+    // Start reading and sending chunks
+    (async () => {
+      try {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) {
+            // Stream is complete
+            mainWindow?.webContents.send(`${channelId}-complete`);
+            break;
+          }
+          
+          // Send chunk to renderer
+          const chunk = new TextDecoder().decode(value);
+          mainWindow?.webContents.send(`${channelId}-chunk`, chunk);
+        }
+      } catch (error) {
+        console.error("Error reading stream:", error);
+        const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+        mainWindow?.webContents.send(`${channelId}-error`, errorMessage);
+      }
+    })();
+    
+    // Return the channel ID that the renderer should listen to
+    return {
+      success: true,
+      streamChannelId: channelId
+    };
+  } catch (error) {
+    console.error("Error in Gemini API request:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'An unknown error occurred'
+    };
   }
 });
 

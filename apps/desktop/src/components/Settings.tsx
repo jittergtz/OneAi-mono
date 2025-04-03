@@ -57,7 +57,7 @@ function SettingsPage() {
   return (
    <main className='p-5 min-h-screen'>
         <ElectronBackLink 
-      className={`fixed duration-200 hover:bg-neutral-500 p-1 rounded-full top-4 left-4 ${theme.textColor}`} 
+      className={`fixed duration-200 bg-neutral-500/50 hover:bg-neutral-600 p-1 rounded-full top-4 left-4 text-white/90`} 
       href="/"
     />
     <h1 className={`text-xl select-none mt-6 ${theme.textColor}`}>Settings</h1>
@@ -76,7 +76,7 @@ function SettingsPage() {
         type="password"
         id="apiKey"
         name="apiKey"
-        className="w-full p-2 placeholder:text-[#ffffff8e] outline-none text-[#c4bcbccb] font-bold  border border-[#35343468] bg-[#1f1f1f68] rounded-md"
+        className="w-full p-2 placeholder:text-[#ffffff8e] outline-none text-[#c4bcbccb] font-bold placeholder:font-normal  border border-[#35343468] bg-[#1f1f1f68] rounded-md"
         placeholder="Enter your Gemini API key"
         value={apiKey}
         onChange={handleInputChange}

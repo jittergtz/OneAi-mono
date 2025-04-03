@@ -1,26 +1,26 @@
-
-
-
-import Footer from "@/components/Footer";
-import Hero from "@/components/waitlist/Hero";
+import Details from "../components/Details";
+import Footer from "../components/Footer";
+import Hero from "../components/Hero";
 
 export default function Home() {
   return (
-    <div className="relative h-screen min-h-screen w-full overflow-auto  dbg-black">
-      <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-        <div className="h-[500px] w-[500px] bg-[linear-gradient(90deg,#ffd5d0_0%,#ffafcc_30%,#dbffe4_70%,#e2d6ff_100%)] rounded-lg blur-[120px] opacity-5 dark:opacity-10" />
-      </div>
-      <div className="relative mx-auto mb-4 flex flex-col">
-        
-        <Hero />
-        <div className="container mx-auto hidden md:block mt-3">
+    <div>
+    <main className="flex   flex-col justify-between ">
+   
 
-        </div>
-        <div className="container mx-auto block md:hidden">
- 
-        </div>
-        <Footer />
+      <Hero/>
+    
+    <div className="relative ">
+      <div className="absolute inset-0 -z-10 h-full w-full items-center px-5 py-24 [background:radial-gradient(125%_125%_at_50%_120%,#000_80%,#171717_120%)]"></div>
+      <Details/>
       </div>
+    
+  
+
+    </main>
+
+    <Footer/>
+
     </div>
   );
 }
